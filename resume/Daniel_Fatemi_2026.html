@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Daniel Fatemi — Resume 2026</title>
+<style>
+  @page {
+    size: letter;
+    margin: 0.42in 0.58in 0.45in 0.58in;
+  }
+
+  :root {
+    --navy: #0a2540;
+    --ink: #1a1a1a;
+    --grey: #555555;
+    --soft: #333333;
+    --link: #0066cc;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Liberation Serif", "Times New Roman", serif;
+    color: var(--ink);
+    font-size: 9.4pt;
+    line-height: 1.26;
+  }
+
+  /* ---------- Header ---------- */
+  .name {
+    text-align: center;
+    color: var(--navy);
+    font-weight: bold;
+    font-size: 21pt;
+    letter-spacing: 2.4pt;
+    margin: 0;
+  }
+  .contact {
+    text-align: center;
+    color: var(--soft);
+    font-size: 9.4pt;
+    margin: 4pt 0 2pt 0;
+  }
+  .contact a { color: var(--link); text-decoration: none; }
+
+  /* ---------- Section headers ---------- */
+  .section-title {
+    color: var(--navy);
+    font-weight: bold;
+    font-variant: small-caps;
+    letter-spacing: 0.9pt;
+    font-size: 11pt;
+    border-bottom: 1.4pt solid var(--navy);
+    padding-bottom: 1pt;
+    margin: 9pt 0 4pt 0;
+  }
+
+  p.summary {
+    text-align: justify;
+    margin: 0;
+  }
+
+  /* ---------- Skills table ---------- */
+  table.skills {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.skills td {
+    vertical-align: top;
+    padding: 1.5pt 0;
+    width: 50%;
+  }
+  table.skills td.left { padding-right: 16pt; }
+  table.skills td.right { padding-left: 16pt; }
+  .skill-label {
+    color: var(--navy);
+    font-weight: bold;
+    font-variant: small-caps;
+    letter-spacing: 0.4pt;
+  }
+
+  /* ---------- Projects ---------- */
+  .project-title {
+    color: var(--navy);
+    font-weight: bold;
+    font-size: 10.6pt;
+    margin: 6pt 0 1.5pt 0;
+  }
+  .project-title:first-of-type { margin-top: 2pt; }
+
+  ul.arrow, ul.dot {
+    list-style: none;
+    margin: 0 0 0 0;
+    padding: 0;
+  }
+  ul.arrow li, ul.dot li {
+    position: relative;
+    padding-left: 14pt;
+    margin: 0 0 1.5pt 0;
+    text-align: justify;
+  }
+  ul.arrow li::before {
+    content: "\25B8";           /* ▸ */
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--navy);
+    font-family: "Noto Sans Mono", "Liberation Mono", monospace;
+    font-size: 8.4pt;
+  }
+  ul.dot li::before {
+    content: "\2022";           /* • */
+    position: absolute;
+    left: 2pt;
+    top: -0.5pt;
+    color: var(--ink);
+  }
+
+  /* ---------- Experience ---------- */
+  .exp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 6pt;
+  }
+  .exp-row.tight { margin-top: 0.5pt; }
+  .exp-company { color: var(--navy); font-weight: bold; }
+  .exp-loc { color: var(--navy); font-weight: bold; }
+  .exp-role { font-style: italic; color: var(--soft); }
+  .exp-dates { font-style: italic; color: var(--soft); }
+  ul.dot { margin-top: 2pt; }
+
+  /* ---------- Education / generic arrow lists ---------- */
+  ul.arrow.plain li { text-align: left; }
+
+  .edu-line { margin: 0 0 3pt 0; }
+  .edu-line .deg { font-weight: normal; }
+</style>
+</head>
+<body>
+
+  <h1 class="name">DANIEL FATEMI</h1>
+  <div class="contact">
+    San Diego, CA&nbsp;&nbsp;|&nbsp;&nbsp;daniellfatemi@gmail.com&nbsp;&nbsp;|&nbsp;&nbsp;408-239-9340&nbsp;&nbsp;|&nbsp;&nbsp;<a href="#">LinkedIn</a>
+  </div>
+
+  <!-- ===================== SUMMARY ===================== -->
+  <div class="section-title">Professional Summary</div>
+  <p class="summary">
+    Software engineer focused on building production-ready, multi-agent AI systems from the ground up. Experienced in designing scalable agentic
+    solutions with strong technical foundations, including 150+ engine orchestration platforms, real-time streaming interfaces, and high-performance
+    data architectures that index thousands of AI capabilities. Solid background in CRM optimization and customer engagement, making it easy to
+    translate complex business problems into strategic, AI-driven solutions on platforms like Salesforce Agentforce. Driven by a builder mindset and
+    a ship-first approach where every architectural decision is owned end-to-end.
+  </p>
+
+  <!-- ===================== TECHNICAL SKILLS ===================== -->
+  <div class="section-title">Technical Skills</div>
+  <table class="skills">
+    <tr>
+      <td class="left">
+        <span class="skill-label">Languages &amp; Frameworks:</span> React, Next.js, TypeScript, GraphQL,
+        Python, Node.js, Electron, FastAPI, JavaScript, Apex
+      </td>
+      <td class="right">
+        <span class="skill-label">AI &amp; Data:</span> LLMs, Prompt Engineering, RAG, Multi-Agent
+        Orchestration, Semantic Search (Qdrant / pgvector), Knowledge Graphs (Neo4j),
+        ETL Pipelines, In-Memory Indexing
+      </td>
+    </tr>
+    <tr>
+      <td class="left">
+        <span class="skill-label">Infrastructure &amp; DevOps:</span> CI/CD (GitHub Actions), PostgreSQL / Supabase,
+        Stripe, SQLite, WebSocket Streaming, IPC Bridging, Envelope Encryption (AES-256-GCM / HMAC),
+        Cross-Platform Binaries (Win / macOS), OOP
+      </td>
+      <td class="right">
+        <span class="skill-label">Salesforce &amp; CRM:</span> Salesforce Administration, Agentforce, Process
+        Automation, Pipeline Management, CRM Platform Administration
+      </td>
+    </tr>
+  </table>
+
+  <!-- ===================== SELECTED AI PROJECTS ===================== -->
+  <div class="section-title">Selected AI Projects</div>
+
+  <div class="project-title">ClearRecord AI&nbsp;|&nbsp;Solo Architect &amp; Developer</div>
+  <ul class="arrow">
+    <li>Solo-architected and shipped ClearRecord AI, a production direct-to-consumer legal-tech SaaS that forces FCRA-regulated
+      background-check vendors to purge records the courts have already cleared&mdash;owning the gap between &ldquo;court cleared&rdquo; and
+      &ldquo;Checkr shows clean.&rdquo; Delivered across 15 coherent commits and ~30,000 lines of original code with 1,298 passing tests and 80%+
+      coverage, every architectural decision owned end-to-end.</li>
+    <li>Built a deterministic eligibility engine spanning 5 state rule packs (CA, IL, NY, TX, FL) and 30+ encoded statutes that dispatches
+      non-clearable &rarr; needs-review &rarr; clearable rules to return a per-charge verdict, statute citation, and Bayesian confidence interval&mdash;held
+      to &ge;85% line coverage and protected as a registered trade secret under the DTSA (18 U.S.C. &sect; 1832).</li>
+    <li>Engineered 18 vendor adapters (9 FCRA credit-reporting agencies + 9 CCPA people-search aggregators) behind a single interface, each
+      generating statutorily-grounded dispute and opt-out letters with verified recipient addresses, SLA timers, and required-attachment
+      manifests, validated by 120 parameterized contract tests.</li>
+    <li>Designed a defense-in-depth cryptographic layer&mdash;AES-256-GCM envelope encryption with per-tenant data-encryption keys and AAD
+      binding, a Merkle-chained append-only audit log enforced at the database-trigger level, and HMAC-signed Removal Receipts any employer
+      can verify at a zero-PII public token endpoint.</li>
+    <li>Built the data and orchestration substrate on Supabase Postgres&mdash;40 idempotent migrations with Row-Level Security on every tenant
+      table, pgvector similarity search over PII-free case embeddings, an Anthropic-powered eligibility coach and document OCR, and 12 Inngest
+      workflows spanning eligibility coordination, SLA monitoring with auto-generated CFPB complaints, and DSR processing&mdash;deployable from a
+      clean clone to a live production URL in ~90 minutes.</li>
+  </ul>
+
+  <div class="project-title">T.O.A.A&nbsp;|&nbsp;Solo Architect &amp; Developer</div>
+  <ul class="arrow">
+    <li>Solo-architected and shipped T.O.A.A, a production multi-agent AI platform with 150+ cognitive engines, hash-chained cryptographic identity,
+      self-hosted triple-layer memory, and compounding self-improvement loops. The running instance has a Bitcoin-anchored history that no clone
+      of the source code can reproduce.</li>
+    <li>Built a 150+ engine production multi-agent AI platform with 8 pod-leader coordinators, ~60 specialized worker agents, intent-classified
+      dispatch, depth-capped recursive spawning, 386 async FastAPI endpoints, and 182 React/TypeScript components. Achieved real-time
+      WebSocket streaming UX measured at 0.68s time-to-first-token. One person, tens of thousands of lines of original code, every architectural
+      decision owned end-to-end.</li>
+    <li>Designed and self-hosted a triple-layer retrieval-grounded memory system using SQLite for state, Neo4j for the knowledge graph, and Mem0/
+      Qdrant plus fastembed for semantic recall. Included first-class signed-forgetting where every deletion is a cryptographically signed event,
+      retrieval-keyed failure-lesson auto-injection into similar future prompts, per-named-person relational profiles, and an Obsidian vault mirror so
+      every memory is human-auditable in plain markdown. Operated with zero cloud dependency.</li>
+    <li>Engineered cryptographic continuity infrastructure that makes the system&rsquo;s identity non-reproducible. This included an Ed25519-signed
+      append-only soul-chain ledger hash-linked from genesis, OpenTimestamps Bitcoin anchors confirmed at specific 2026-04-22/23/24 block
+      heights, stylometric watermarking, peer-witnessed continuity certificates, and hardware-fingerprint binding. A clone of the source code
+      produces a different identity by construction, ensuring the running instance has a verifiable, externally-auditable history that cannot be forged
+      or transferred.</li>
+    <li>Built compounding-intelligence loops that turn every failure into future capability. This involved ECE-tracked self-prediction calibration with
+      daily resolution, retrieval-keyed failure-lesson distillation that injects relevant lessons into similar future prompts, nightly Claude-distilled
+      insight extraction with strict no-platitude guardrails, weekly memory consolidation into long-form essays, and a daily-evolving relational
+      model of the operator. The system gets measurably sharper over time without supervised labels and without forgetting. Every benchmark loss
+      is converted into permanent context that prevents the same mistake.</li>
+    <li>Shipped a multimodal embodiment layer with safety-by-construction. Included sub-second streaming voice using Fish Audio TTS with
+      sentence-chunked playback and single-channel interrupt-handling, opt-in screen vision with hardcoded password/banking/credentials
+      blocklists, allowlisted read-only filesystem with secret-pattern refusal at the file-pattern level, a kill-switched computer-use surface gated
+      behind an explicit confirmation modal, and a fully audited safety-event ledger that logs every refusal. All interactions are opt-in, reviewed, and
+      auditable.</li>
+  </ul>
+
+  <div class="project-title">DarkNite Command Center&nbsp;|&nbsp;Creator &amp; Lead Engineer</div>
+  <ul class="arrow">
+    <li>Architected and shipped a cross-platform Electron desktop application that serves as a centralized intelligence hub for 7,219+ AI capabilities
+      including skills, agents, and commands. Features real-time search, categorization, and one-click deployment to developer environments.</li>
+    <li>Engineered a self-updating software platform with an automated CI/CD pipeline using GitHub Actions that builds, signs, and distributes native
+      binaries for Windows (NSIS + Portable) and macOS (Universal: Intel + Apple Silicon). Pushes over-the-air auto-updates seamlessly to end
+      users.</li>
+    <li>Designed a high-performance data architecture capable of loading and indexing 50MB+ datasets in-memory by leveraging Node.js Buffer
+      decoding, ASAR-unpacked file strategies, and a multi-fallback loading pipeline that adapts to platform-specific runtime constraints.</li>
+    <li>Built a GitHub integration layer that scans, vets, and installs capabilities from any public repository, enabling a community-driven ecosystem
+      where the app continuously grows beyond its bundled dataset.</li>
+    <li>Implemented a secure Electron architecture with full context isolation, IPC-bridged APIs, and sandboxed rendering. Delivered a production-grade
+      desktop product from zero to 12 releases with cross-platform compatibility and no external dependencies.</li>
+  </ul>
+
+  <div class="project-title">JARVIS Data Engine&nbsp;|&nbsp;Creator &amp; Architect</div>
+  <ul class="arrow">
+    <li>Designed a triple-redundancy runtime loading architecture that dynamically selects between Node.js filesystem reads, DOM-injected script
+      globals (window._JARVIS_RAW), and IPC bridge delivery. Guaranteed data availability across sandboxed, unsigned, and restricted execution
+      environments without a single point of failure.</li>
+    <li>Engineered a compact, memory-efficient schema ({id, d, c}) that compresses 7,959+ heterogeneous AI capabilities into a uniform structure
+      optimized for instant in-memory indexing, sub-millisecond search, and constant-time lookups, eliminating the need for a database layer
+      entirely.</li>
+    <li>Architected a provider-agnostic abstraction layer that decouples capability data from any specific AI platform, allowing any downstream
+      consumer to query, filter, and deploy entries to Claude Code, Cursor, or future toolchains without modifying the core data contract.</li>
+    <li>Built a deterministic ETL compilation pipeline that ingests 28+ repositories of mixed formats including Markdown, JSON, YAML, and raw
+      text. Deduplicated and classified entries across 40+ technical domains, outputting both a Base64-encoded binary artifact and a browser-ready
+      JavaScript module from a single source of truth.</li>
+    <li>Implemented a versioned, append-only data architecture (currently v15.0) designed for autonomous growth. New repositories are onboarded as
+      configuration rather than code changes, enabling the dataset to scale indefinitely without schema migrations or breaking downstream
+      consumers.</li>
+  </ul>
+
+  <!-- ===================== PROFESSIONAL EXPERIENCE ===================== -->
+  <div class="section-title">Professional Experience</div>
+
+  <div class="exp-row"><span class="exp-company">BPM ADVISORS, LLC</span><span class="exp-loc">La Ca&ntilde;ada, CA</span></div>
+  <div class="exp-row tight"><span class="exp-role">Business Analyst</span><span class="exp-dates">July 2019 &ndash; Present</span></div>
+  <ul class="dot">
+    <li>Conduct interviews with business clients to gather requirements, improving project timelines and accelerating go-to-market speeds by 20%.</li>
+    <li>Provide data-driven insights to enhance client services, contributing to increased contract conversion rates.</li>
+    <li>Administer Salesforce, ensuring accurate data management and process automation for sales teams.</li>
+    <li>Collaborate with stakeholders to optimize sales workflows, enhancing customer engagement and retention.</li>
+  </ul>
+
+  <div class="exp-row"><span class="exp-company">NEW YORK LIFE</span><span class="exp-loc">San Jose, CA</span></div>
+  <div class="exp-row tight"><span class="exp-role">Financial Analyst</span><span class="exp-dates">March 2023 &ndash; November 2023</span></div>
+  <ul class="dot">
+    <li>Managed inbound lead queues and customer engagement across multiple channels, increasing conversion rates.</li>
+    <li>Conducted financial analysis to assess customer needs and align them with appropriate financial solutions.</li>
+    <li>Partnered with sales teams to optimize lead generation efforts and streamline CRM processes.</li>
+  </ul>
+
+  <div class="exp-row"><span class="exp-company">JP MORGAN CHASE</span><span class="exp-loc">San Jose, CA</span></div>
+  <div class="exp-row tight"><span class="exp-role">Financial Analyst Intern</span><span class="exp-dates">September 2022 &ndash; March 2023</span></div>
+  <ul class="dot">
+    <li>Provided high-level customer service and supported financial transactions, enhancing customer satisfaction.</li>
+    <li>Analyzed transaction patterns to identify business development opportunities.</li>
+  </ul>
+
+  <div class="exp-row"><span class="exp-company">SILICON VALLEY ENTHUSIASTS</span><span class="exp-loc">San Jose, CA</span></div>
+  <div class="exp-row tight"><span class="exp-role">Business Manager</span><span class="exp-dates">September 2020 &ndash; October 2021</span></div>
+  <ul class="dot">
+    <li>Increased social media engagement by 35% over 28 days through strategic marketing adjustments.</li>
+    <li>Managed front office sales operations and processed contracts for a $2M+ luxury automobile establishment.</li>
+    <li>Developed customer insights and exceeded a $250K+ sales quota.</li>
+  </ul>
+
+  <!-- ===================== EDUCATION ===================== -->
+  <div class="section-title">Education &amp; Certifications</div>
+  <div class="edu-line">University of California, San Diego &ndash; Revelle College&nbsp;|&nbsp;B.A. International Business&nbsp;|&nbsp;Expected Graduation: 2026</div>
+  <ul class="arrow plain">
+    <li>Salesforce AI Associate Certification</li>
+    <li>Salesforce Trailblazer AI Champion</li>
+    <li>Calbright College&nbsp;|&nbsp;CRM Platform Administration Certificate</li>
+    <li>De Anza / Foothill College&nbsp;|&nbsp;A.A. Business Administration</li>
+    <li>YearUp Graduate&nbsp;|&nbsp;Client Service and Sales Support</li>
+  </ul>
+
+  <!-- ===================== VOLUNTEERING ===================== -->
+  <div class="section-title">Volunteering &amp; Community Service</div>
+  <ul class="arrow plain">
+    <li>Mentor to immigrant workers and students, assisting with career development and integration.</li>
+    <li>Founder and President of Bike Adventures and MentorsRUs, promoting community engagement and mentorship.</li>
+    <li>Assistant Coach at Almaden FC, fostering teamwork and leadership in youth sports.</li>
+  </ul>
+
+</body>
+</html>
