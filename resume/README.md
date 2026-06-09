@@ -5,9 +5,9 @@ truth; `Daniel_Fatemi_2026.pdf` is the rendered output.
 
 ## What changed
 
-Added **ClearRecord AI** as the lead entry under *Selected AI Projects*,
-written to match the existing voice and bullet style (strong opening verb,
-dense technical detail, hard metrics, em-dash clauses, "owned end-to-end").
+Added **cila.ai** as the lead entry under *Selected AI Projects*, written to
+match the existing voice and bullet style (strong opening verb, dense
+technical detail, hard metrics, em-dash clauses, "owned end-to-end").
 The skills section gained the technologies that project demonstrates
 (Next.js, PostgreSQL/Supabase, Stripe, pgvector, AES-256-GCM/HMAC envelope
 encryption).

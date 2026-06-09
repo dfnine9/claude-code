@@ -150,11 +150,12 @@
   <!-- ===================== SUMMARY ===================== -->
   <div class="section-title">Professional Summary</div>
   <p class="summary">
-    Software engineer focused on building production-ready, multi-agent AI systems from the ground up. Experienced in designing scalable agentic
-    solutions with strong technical foundations, including 150+ engine orchestration platforms, real-time streaming interfaces, and high-performance
-    data architectures that index thousands of AI capabilities. Solid background in CRM optimization and customer engagement, making it easy to
-    translate complex business problems into strategic, AI-driven solutions on platforms like Salesforce Agentforce. Driven by a builder mindset and
-    a ship-first approach where every architectural decision is owned end-to-end.
+    Software engineer who solo-architects and ships production-grade systems end-to-end&mdash;from 150+ engine multi-agent AI platforms to a
+    cryptographically-secured, FCRA-compliant legal-tech SaaS. Experienced in designing scalable agentic solutions on rigorous technical
+    foundations: deterministic rule engines, real-time streaming interfaces, defense-in-depth encryption, and high-performance data architectures
+    that index thousands of AI capabilities. Solid background in CRM optimization and customer engagement, making it easy to translate complex
+    business and regulatory problems into strategic, AI-driven solutions on platforms like Salesforce Agentforce. Driven by a builder mindset and a
+    ship-first approach where every architectural decision&mdash;and every line of code&mdash;is owned end-to-end.
   </p>
 
   <!-- ===================== TECHNICAL SKILLS ===================== -->
@@ -187,25 +188,28 @@
   <!-- ===================== SELECTED AI PROJECTS ===================== -->
   <div class="section-title">Selected AI Projects</div>
 
-  <div class="project-title">ClearRecord AI&nbsp;|&nbsp;Solo Architect &amp; Developer</div>
+  <div class="project-title">cila.ai&nbsp;|&nbsp;Solo Architect &amp; Developer</div>
   <ul class="arrow">
-    <li>Solo-architected and shipped ClearRecord AI, a production direct-to-consumer legal-tech SaaS that forces FCRA-regulated
-      background-check vendors to purge records the courts have already cleared&mdash;owning the gap between &ldquo;court cleared&rdquo; and
-      &ldquo;Checkr shows clean.&rdquo; Delivered across 15 coherent commits and ~30,000 lines of original code with 1,298 passing tests and 80%+
-      coverage, every architectural decision owned end-to-end.</li>
-    <li>Built a deterministic eligibility engine spanning 5 state rule packs (CA, IL, NY, TX, FL) and 30+ encoded statutes that dispatches
-      non-clearable &rarr; needs-review &rarr; clearable rules to return a per-charge verdict, statute citation, and Bayesian confidence interval&mdash;held
-      to &ge;85% line coverage and protected as a registered trade secret under the DTSA (18 U.S.C. &sect; 1832).</li>
+    <li>Solo-architected and shipped cila.ai, a production direct-to-consumer legal-tech platform that compels FCRA-regulated background-check
+      vendors to purge records the courts have already cleared&mdash;owning the untouched gap between &ldquo;court cleared&rdquo; and &ldquo;Checkr shows
+      clean.&rdquo; One engineer: 15 coherent commits, ~30,000 lines of original production code, 1,298 passing tests at 80%+ coverage, every
+      architectural decision owned end-to-end.</li>
+    <li>Authored a deterministic eligibility engine spanning 5 state rule packs (CA, IL, NY, TX, FL) and 30+ encoded statutes, with a non-clearable
+      &rarr; needs-review &rarr; clearable dispatch that returns a per-charge verdict, exact statutory citation, and Bayesian confidence interval&mdash;held
+      to &ge;85% line coverage and registered as a protected trade secret under the DTSA (18 U.S.C. &sect; 1832).</li>
     <li>Engineered 18 vendor adapters (9 FCRA credit-reporting agencies + 9 CCPA people-search aggregators) behind a single interface, each
-      generating statutorily-grounded dispute and opt-out letters with verified recipient addresses, SLA timers, and required-attachment
-      manifests, validated by 120 parameterized contract tests.</li>
-    <li>Designed a defense-in-depth cryptographic layer&mdash;AES-256-GCM envelope encryption with per-tenant data-encryption keys and AAD
-      binding, a Merkle-chained append-only audit log enforced at the database-trigger level, and HMAC-signed Removal Receipts any employer
-      can verify at a zero-PII public token endpoint.</li>
-    <li>Built the data and orchestration substrate on Supabase Postgres&mdash;40 idempotent migrations with Row-Level Security on every tenant
+      auto-generating statutorily-grounded dispute and opt-out letters with verified recipient addresses, SLA timers, and required-attachment
+      manifests&mdash;the entire vendor surface proven by 120 parameterized contract tests.</li>
+    <li>Designed a defense-in-depth cryptographic core&mdash;AES-256-GCM envelope encryption with per-tenant data-encryption keys and AAD binding, a
+      Merkle-chained append-only audit log enforced at the database-trigger level, and HMAC-signed Removal Receipts any employer can independently
+      verify at a zero-PII public endpoint&mdash;a tamper-evident chain of custody from court order to cleared report.</li>
+    <li>Built the entire data and orchestration substrate on Supabase Postgres&mdash;40 idempotent migrations with Row-Level Security on every tenant
       table, pgvector similarity search over PII-free case embeddings, an Anthropic-powered eligibility coach and document OCR, and 12 Inngest
-      workflows spanning eligibility coordination, SLA monitoring with auto-generated CFPB complaints, and DSR processing&mdash;deployable from a
-      clean clone to a live production URL in ~90 minutes.</li>
+      workflows (eligibility coordination, SLA monitoring with auto-generated CFPB complaints, DSR processing)&mdash;engineered to deploy from a clean
+      clone to a live production URL in ~90 minutes.</li>
+    <li>Hardened the platform behind an eight-layer IP and security moat&mdash;proprietary licensing, four-channel forensic PDF watermarking,
+      per-customer API canary tokens, graduated anti-scraping middleware, and a SOC 2 / GDPR / CCPA compliance posture&mdash;and exposed a
+      scope-gated public API (OpenAPI spec with TypeScript and Python SDKs) plus an HRIS receipt-verification endpoint to open B2B revenue.</li>
   </ul>
 
   <div class="project-title">T.O.A.A&nbsp;|&nbsp;Solo Architect &amp; Developer</div>
