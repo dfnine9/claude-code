@@ -1,0 +1,301 @@
+<title>mixie — strawberry social tonic</title>
+<style>
+  :root {
+    --bg1: #FFF1F3;
+    --bg2: #FBD3DC;
+    --page-ink: #5B1D2C;
+    --page-muted: #9C6D77;
+    --straw: #EF456A;
+    --straw-deep: #CE2B51;
+    --saffron: #F2A63A;
+    --saffron-deep: #DE8419;
+    --cream: #FFF8F1;
+    --cream-edge: #EBD9CA;
+    --label-ink: #4A0F1E;
+    --glass-stroke: rgba(206,43,81,0.22);
+    --chip-bg: rgba(255,255,255,0.6);
+    --chip-line: rgba(206,43,81,0.18);
+    --display: "Helvetica Neue", Arial, system-ui, sans-serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg1: #1C0A10;
+      --bg2: #33101E;
+      --page-ink: #F4D3DA;
+      --page-muted: #C89AA4;
+      --straw: #FF6E8B;
+      --straw-deep: #EF456A;
+      --saffron: #F3B24E;
+      --saffron-deep: #E0871B;
+      --cream: #FBEFE6;
+      --cream-edge: #E7D2C2;
+      --glass-stroke: rgba(255,110,139,0.28);
+      --chip-bg: rgba(255,255,255,0.06);
+      --chip-line: rgba(255,110,139,0.22);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg1: #FFF1F3; --bg2: #FBD3DC; --page-ink: #5B1D2C; --page-muted: #9C6D77;
+    --straw: #EF456A; --straw-deep: #CE2B51; --saffron: #F2A63A; --saffron-deep: #DE8419;
+    --cream: #FFF8F1; --cream-edge: #EBD9CA; --label-ink: #4A0F1E;
+    --glass-stroke: rgba(206,43,81,0.22); --chip-bg: rgba(255,255,255,0.6); --chip-line: rgba(206,43,81,0.18);
+  }
+  :root[data-theme="dark"] {
+    --bg1: #1C0A10; --bg2: #33101E; --page-ink: #F4D3DA; --page-muted: #C89AA4;
+    --straw: #FF6E8B; --straw-deep: #EF456A; --saffron: #F3B24E; --saffron-deep: #E0871B;
+    --cream: #FBEFE6; --cream-edge: #E7D2C2; --label-ink: #4A0F1E;
+    --glass-stroke: rgba(255,110,139,0.28); --chip-bg: rgba(255,255,255,0.06); --chip-line: rgba(255,110,139,0.22);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--body);
+    color: var(--page-ink);
+    background:
+      radial-gradient(120% 90% at 50% 8%, var(--bg2) 0%, var(--bg1) 62%);
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 1.25rem 3.5rem;
+  }
+  main {
+    width: 100%;
+    max-width: 40rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--straw-deep);
+    margin: 0 0 1.6rem;
+  }
+  @media (prefers-color-scheme: dark) { .eyebrow { color: var(--straw); } }
+  :root[data-theme="dark"] .eyebrow { color: var(--straw); }
+  :root[data-theme="light"] .eyebrow { color: var(--straw-deep); }
+
+  .bottle {
+    width: min(78vw, 300px);
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 24px 30px rgba(120,10,40,0.16));
+    animation: bob 6s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-9px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bottle { animation: none; }
+  }
+
+  .lockup { margin-top: 1.4rem; }
+  .wordmark {
+    display: inline-flex;
+    align-items: flex-start;
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(3.4rem, 15vw, 5.6rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--straw);
+    text-transform: lowercase;
+  }
+  .wordmark .ltr { position: relative; }
+  .wordmark .i { position: relative; padding: 0 0.01em; }
+  .wordmark .seed {
+    position: absolute;
+    top: 0.04em;
+    left: 50%;
+    width: 0.19em;
+    height: 0.24em;
+    transform: translateX(-50%) rotate(8deg);
+    background: var(--saffron);
+    border-radius: 60% 60% 55% 55% / 70% 70% 40% 40%;
+    box-shadow: inset -0.02em -0.02em 0 rgba(0,0,0,0.08);
+  }
+
+  .tagline {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(1.05rem, 3.4vw, 1.3rem);
+    line-height: 1.3;
+    margin: 0.9rem 0 0;
+    max-width: 22ch;
+    text-wrap: balance;
+    color: var(--page-ink);
+  }
+  .tagline em { font-style: normal; color: var(--straw); }
+
+  .chips {
+    list-style: none;
+    padding: 0;
+    margin: 1.7rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .chips li {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.75rem;
+    border-radius: 99px;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-line);
+    color: var(--page-ink);
+    backdrop-filter: blur(4px);
+  }
+
+  .note {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--page-muted);
+    margin: 1.8rem 0 0;
+    max-width: 34ch;
+  }
+</style>
+
+<main>
+  <p class="eyebrow">Concept &middot; Strawberry Social Tonic &middot; 2 fl oz</p>
+
+  <svg class="bottle" viewBox="0 0 320 490" role="img"
+       aria-label="A small clear-glass 2 ounce shot bottle filled with strawberry-pink tonic, labeled mixie, with strawberry slices and saffron threads at its base.">
+    <defs>
+      <linearGradient id="cap" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="var(--saffron-deep)"/>
+        <stop offset="0.5" stop-color="var(--saffron)"/>
+        <stop offset="1" stop-color="var(--saffron-deep)"/>
+      </linearGradient>
+      <linearGradient id="liquid" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--straw)"/>
+        <stop offset="1" stop-color="var(--straw-deep)"/>
+      </linearGradient>
+      <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/>
+        <stop offset="0.25" stop-color="#ffffff" stop-opacity="0.05"/>
+        <stop offset="1" stop-color="#ffffff" stop-opacity="0.14"/>
+      </linearGradient>
+      <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+        <feGaussianBlur stdDeviation="7"/>
+      </filter>
+    </defs>
+
+    <!-- ground shadow -->
+    <ellipse cx="160" cy="470" rx="96" ry="15" fill="#6a0a24" opacity="0.16" filter="url(#soft)"/>
+
+    <!-- glass silhouette -->
+    <path d="M126,74 L126,96 Q126,105 118,112 Q92,129 88,170 L88,420 Q88,452 120,452
+             L200,452 Q232,452 232,420 L232,170 Q228,129 202,112 Q194,105 194,96 L194,74 Z"
+          fill="url(#glass)" stroke="var(--glass-stroke)" stroke-width="2"/>
+
+    <!-- liquid -->
+    <path d="M92,198 L92,418 Q92,448 120,448 L200,448 Q228,448 228,418 L228,198 Z" fill="url(#liquid)"/>
+    <ellipse cx="160" cy="198" rx="68" ry="8" fill="#ffffff" opacity="0.18"/>
+    <!-- fine bubbles / seeds suspended -->
+    <circle cx="120" cy="250" r="2.1" fill="#fff" opacity="0.35"/>
+    <circle cx="205" cy="230" r="1.6" fill="#fff" opacity="0.3"/>
+    <circle cx="196" cy="300" r="2.4" fill="#fff" opacity="0.28"/>
+    <circle cx="112" cy="330" r="1.7" fill="#fff" opacity="0.3"/>
+    <circle cx="150" cy="235" r="1.5" fill="#fff" opacity="0.32"/>
+    <circle cx="210" cy="400" r="1.9" fill="#fff" opacity="0.26"/>
+    <circle cx="108" cy="405" r="1.5" fill="#fff" opacity="0.26"/>
+
+    <!-- glass highlights -->
+    <rect x="103" y="205" width="14" height="205" rx="7" fill="#fff" opacity="0.28"/>
+    <rect x="123" y="212" width="5" height="150" rx="2.5" fill="#fff" opacity="0.16"/>
+
+    <!-- neck collar + cap -->
+    <rect x="112" y="66" width="96" height="10" rx="3" fill="var(--saffron-deep)"/>
+    <rect x="116" y="24" width="88" height="46" rx="9" fill="url(#cap)"/>
+    <g stroke="var(--saffron-deep)" stroke-width="1.4" opacity="0.55">
+      <line x1="130" y1="30" x2="130" y2="64"/>
+      <line x1="145" y1="30" x2="145" y2="64"/>
+      <line x1="160" y1="30" x2="160" y2="64"/>
+      <line x1="175" y1="30" x2="175" y2="64"/>
+      <line x1="190" y1="30" x2="190" y2="64"/>
+    </g>
+    <rect x="116" y="24" width="88" height="12" rx="9" fill="#fff" opacity="0.22"/>
+
+    <!-- label -->
+    <rect x="82" y="250" width="156" height="146" rx="18" fill="var(--cream)"
+          stroke="var(--cream-edge)" stroke-width="1.5"/>
+    <rect x="90" y="258" width="140" height="130" rx="12" fill="none"
+          stroke="var(--saffron)" stroke-width="1" opacity="0.5"/>
+
+    <!-- little strawberry mark on label -->
+    <g transform="translate(160,283)">
+      <path d="M0,-9 Q11,-11 11,1 Q11,12 0,15 Q-11,12 -11,1 Q-11,-11 0,-9 Z" fill="var(--straw)"/>
+      <path d="M-4,-9 Q0,-14 4,-9 Q1,-8 0,-8 Q-1,-8 -4,-9 Z" fill="var(--saffron)"/>
+      <circle cx="-4" cy="0" r="0.9" fill="var(--saffron)"/>
+      <circle cx="4" cy="0" r="0.9" fill="var(--saffron)"/>
+      <circle cx="0" cy="6" r="0.9" fill="var(--saffron)"/>
+      <circle cx="-5" cy="6" r="0.8" fill="var(--saffron)"/>
+      <circle cx="5" cy="6" r="0.8" fill="var(--saffron)"/>
+    </g>
+
+    <text x="160" y="330" text-anchor="middle" font-family="var(--display)"
+          font-weight="900" font-size="34" letter-spacing="-1" fill="var(--straw)">mixie</text>
+    <text x="160" y="352" text-anchor="middle" font-family="var(--mono)"
+          font-size="9.5" letter-spacing="3.5" fill="var(--label-ink)" opacity="0.85">STRAWBERRY</text>
+    <line x1="128" y1="361" x2="192" y2="361" stroke="var(--saffron)" stroke-width="1.2" opacity="0.7"/>
+    <text x="160" y="376" text-anchor="middle" font-family="var(--mono)"
+          font-size="8" letter-spacing="2.5" fill="var(--label-ink)" opacity="0.6">SOCIAL TONIC &middot; 2 FL OZ</text>
+
+    <!-- props: saffron threads -->
+    <g stroke="var(--saffron-deep)" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.85">
+      <path d="M64,452 Q72,444 70,436"/>
+      <path d="M72,458 Q84,454 92,458"/>
+      <path d="M244,450 Q252,443 262,447"/>
+      <path d="M250,460 Q258,456 266,460"/>
+    </g>
+
+    <!-- props: strawberry slices -->
+    <g transform="translate(84,448)">
+      <circle r="20" fill="var(--straw)"/>
+      <circle r="20" fill="none" stroke="#fff" stroke-width="2.5" opacity="0.5"/>
+      <circle r="13" fill="#fff" opacity="0.18"/>
+      <g fill="var(--saffron)">
+        <ellipse cx="0" cy="-9" rx="1.2" ry="2" /><ellipse cx="8" cy="-4" rx="1.2" ry="2"/>
+        <ellipse cx="8" cy="5" rx="1.2" ry="2"/><ellipse cx="0" cy="10" rx="1.2" ry="2"/>
+        <ellipse cx="-8" cy="5" rx="1.2" ry="2"/><ellipse cx="-8" cy="-4" rx="1.2" ry="2"/>
+      </g>
+    </g>
+    <g transform="translate(240,456)">
+      <circle r="16" fill="var(--straw-deep)"/>
+      <circle r="16" fill="none" stroke="#fff" stroke-width="2" opacity="0.45"/>
+      <g fill="var(--saffron)">
+        <ellipse cx="0" cy="-7" rx="1" ry="1.7"/><ellipse cx="6" cy="-2" rx="1" ry="1.7"/>
+        <ellipse cx="5" cy="6" rx="1" ry="1.7"/><ellipse cx="-5" cy="6" rx="1" ry="1.7"/>
+        <ellipse cx="-6" cy="-2" rx="1" ry="1.7"/>
+      </g>
+    </g>
+  </svg>
+
+  <div class="lockup">
+    <div class="wordmark" aria-hidden="true">
+      <span class="ltr">m</span><span class="i">&#305;<span class="seed"></span></span><span class="ltr">x</span><span class="i">&#305;<span class="seed"></span></span><span class="ltr">e</span>
+    </div>
+  </div>
+
+  <p class="tagline">the warm little lift &mdash; <em>sip it, or pour it into anything.</em></p>
+
+  <ul class="chips">
+    <li>Saffron mood-lift</li>
+    <li>Lion's mane focus</li>
+    <li>L-theanine calm</li>
+    <li>No THC &middot; No kava</li>
+  </ul>
+
+  <p class="note">Strawberry-pink, clear-glass shot &middot; nano-fast onset. The dots on the i's are strawberry seeds &mdash; drawn in saffron gold, a nod to the signature ingredient inside.</p>
+</main>

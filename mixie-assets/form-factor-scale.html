@@ -1,0 +1,464 @@
+<title>One dose, seven shapes — form factors at true scale</title>
+<style>
+  :root {
+    --bg: #F4F7F1;
+    --surface: #FCFDFB;
+    --ink: #1C2620;
+    --muted: #5C6B5F;
+    --line: #D8E0D4;
+    --lemon: #E9C93F;
+    --lemon-deep: #C9A62A;
+    --accent-text: #8A6D00;
+    --ok: #2E7D4F;
+    --ok-bg: #E3EFE6;
+    --warn: #A34A2A;
+    --warn-bg: #F3E5DE;
+    --metal: #B9C2BA;
+    --papery: #FBF6E4;
+    --pink: #E8879E;
+    --pink-deep: #C4657E;
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #131A15;
+      --surface: #1B241D;
+      --ink: #E8EEE7;
+      --muted: #93A395;
+      --line: #2C382E;
+      --lemon: #E9C93F;
+      --lemon-deep: #B08F1F;
+      --accent-text: #E4C44A;
+      --ok: #6CC48C;
+      --ok-bg: #1E3327;
+      --warn: #D98A6A;
+      --warn-bg: #3A2419;
+      --metal: #5A665C;
+      --papery: #EFE8CE;
+      --pink: #ED9CB1;
+      --pink-deep: #C4657E;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F4F7F1; --surface: #FCFDFB; --ink: #1C2620; --muted: #5C6B5F;
+    --line: #D8E0D4; --lemon: #E9C93F; --lemon-deep: #C9A62A; --accent-text: #8A6D00;
+    --ok: #2E7D4F; --ok-bg: #E3EFE6; --warn: #A34A2A; --warn-bg: #F3E5DE;
+    --metal: #B9C2BA; --papery: #FBF6E4; --pink: #E8879E; --pink-deep: #C4657E;
+  }
+  :root[data-theme="dark"] {
+    --bg: #131A15; --surface: #1B241D; --ink: #E8EEE7; --muted: #93A395;
+    --line: #2C382E; --lemon: #E9C93F; --lemon-deep: #B08F1F; --accent-text: #E4C44A;
+    --ok: #6CC48C; --ok-bg: #1E3327; --warn: #D98A6A; --warn-bg: #3A2419;
+    --metal: #5A665C; --papery: #EFE8CE; --pink: #ED9CB1; --pink-deep: #C4657E;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.55;
+    margin: 0;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  main { max-width: 68rem; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+    margin: 0 0 0.6rem;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(1.9rem, 4.5vw, 2.9rem);
+    font-weight: 600;
+    line-height: 1.12;
+    margin: 0 0 0.7rem;
+    text-wrap: balance;
+  }
+  .dek {
+    max-width: 42rem;
+    color: var(--muted);
+    margin: 0 0 2.2rem;
+  }
+  .dek strong { color: var(--ink); font-weight: 600; }
+
+  .bench-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow-x: auto;
+    padding: 2rem 1.5rem 1.25rem;
+    margin-bottom: 0.6rem;
+  }
+  .bench {
+    display: flex;
+    align-items: flex-end;
+    gap: 2.25rem;
+    min-width: max-content;
+    padding-bottom: 0.25rem;
+  }
+  .obj { margin: 0; display: flex; flex-direction: column; align-items: center; }
+  .stage { display: flex; align-items: flex-end; justify-content: center; }
+  .profile {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+    justify-content: flex-start;
+  }
+  .profile-bar { background: var(--metal); border-radius: 1px; }
+  .profile-note { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); white-space: nowrap; }
+
+  .obj figcaption { text-align: center; margin-top: 0.6rem; min-height: 7.2rem; }
+  .obj h3 { font-family: var(--display); font-size: 1.02rem; font-weight: 600; margin: 0 0 0.15rem; }
+  .dims { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin: 0 0 0.25rem; white-space: nowrap; }
+  .payload { font-size: 0.8rem; margin: 0 0 0.45rem; color: var(--ink); }
+  .chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.22rem 0.55rem;
+    border-radius: 99px;
+    white-space: nowrap;
+  }
+  .chip.ok { background: var(--ok-bg); color: var(--ok); }
+  .chip.warn { background: var(--warn-bg); color: var(--warn); }
+  .chip.ref { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+
+  .scale-note {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin: 0 0 2.5rem;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 2.4rem 0 0.9rem;
+  }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.84rem; min-width: 46rem; }
+  th, td { text-align: left; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: none; }
+  th {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  td.num { font-family: var(--mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .yes { color: var(--ok); font-weight: 600; }
+  td .no { color: var(--warn); font-weight: 600; }
+  .bench-row td:first-child { font-weight: 600; }
+
+  .notes { max-width: 46rem; }
+  .notes ul { padding-left: 1.2rem; margin: 0; }
+  .notes li { margin-bottom: 0.55rem; font-size: 0.86rem; color: var(--muted); }
+  .notes li strong { color: var(--ink); font-weight: 600; }
+
+  svg text { font-family: var(--mono); }
+</style>
+
+<main>
+  <p class="eyebrow">Form-factor study · Brez Flow equivalent · ≈400 mg actives</p>
+  <h1>One dose, seven shapes</h1>
+  <p class="dek">Everything below is drawn at the <strong>same scale</strong> — the quarter is your calibration. The payload is a full THC-free Brez Flow serving: lion's mane 10:1 extract, L-theanine, high-theobromine cacao, and encapsulated black seed oil, ≈400 mg of actives in total. The can delivers it in 355&nbsp;mL of liquid; the other shapes compress it — a 2&nbsp;oz shot, dry films, a tab, a gummy.</p>
+
+  <div class="bench-wrap">
+    <div class="bench">
+
+      <!-- 12 oz slim can · 58 × 157 mm · scale 2.6 px/mm → 151 × 408 -->
+      <figure class="obj">
+        <div class="stage">
+          <svg width="151" height="408" viewBox="0 0 151 408" role="img" aria-label="12 ounce slim can, 58 by 157 millimeters">
+            <rect x="4" y="14" width="143" height="390" rx="10" fill="var(--lemon)"/>
+            <ellipse cx="75.5" cy="15" rx="71.5" ry="10" fill="var(--metal)"/>
+            <ellipse cx="75.5" cy="15" rx="58" ry="7" fill="var(--bg)" opacity="0.35"/>
+            <rect x="4" y="140" width="143" height="130" fill="var(--papery)"/>
+            <text x="75.5" y="196" text-anchor="middle" font-size="13" fill="var(--ink)" opacity="0.75">12 fl oz</text>
+            <text x="75.5" y="214" text-anchor="middle" font-size="10" fill="var(--ink)" opacity="0.5">social tonic</text>
+            <rect x="4" y="14" width="30" height="390" rx="10" fill="#FFFFFF" opacity="0.18"/>
+          </svg>
+        </div>
+        <div class="profile">
+          <span class="profile-note">this is the side profile</span>
+        </div>
+        <figcaption>
+          <h3>The can (benchmark)</h3>
+          <p class="dims">&#8960;58 &#215; 157 mm &#183; 372 g full</p>
+          <p class="payload">400 mg actives in 355 mL</p>
+          <span class="chip ok">The dose to match</span>
+        </figcaption>
+      </figure>
+
+      <!-- 2 oz shot bottle · ⌀45 × 75 mm → 117 × 195 -->
+      <figure class="obj">
+        <div class="stage">
+          <svg width="117" height="195" viewBox="0 0 117 195" role="img" aria-label="Two ounce clear glass shot bottle with pink liquid, 45 millimeter diameter, 75 millimeters tall">
+            <rect x="36" y="6" width="45" height="24" rx="5" fill="var(--metal)"/>
+            <line x1="42" y1="10" x2="42" y2="26" stroke="var(--bg)" stroke-width="1" opacity="0.4"/>
+            <line x1="51" y1="9" x2="51" y2="27" stroke="var(--bg)" stroke-width="1" opacity="0.4"/>
+            <line x1="60" y1="8" x2="60" y2="28" stroke="var(--bg)" stroke-width="1" opacity="0.4"/>
+            <line x1="69" y1="9" x2="69" y2="27" stroke="var(--bg)" stroke-width="1" opacity="0.4"/>
+            <path d="M42,30 L42,48 Q8,62 8,92 L8,172 Q8,190 26,190 L91,190 Q109,190 109,172 L109,92 Q109,62 75,48 L75,30 Z" fill="var(--pink)" opacity="0.2" stroke="var(--metal)" stroke-width="1.25"/>
+            <path d="M46,44 L46,50 Q13,64 13,92 L13,168 Q13,185 28,185 L89,185 Q104,185 104,168 L104,92 Q104,64 71,50 L71,44 Z" fill="var(--pink)" opacity="0.85"/>
+            <rect x="20" y="74" width="10" height="102" rx="5" fill="#FFFFFF" opacity="0.35"/>
+            <text x="58.5" y="128" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.9">2 fl oz</text>
+            <text x="58.5" y="144" text-anchor="middle" font-size="8" fill="#FFFFFF" opacity="0.65">clear flint glass</text>
+          </svg>
+        </div>
+        <div class="profile">
+          <span class="profile-note">this is the side profile</span>
+        </div>
+        <figcaption>
+          <h3>Pink shot (Feel Free-style)</h3>
+          <p class="dims">&#8960;45 &#215; 75 mm &#183; 60 mL</p>
+          <p class="payload">400 mg actives, ~3&#215; headroom</p>
+          <span class="chip ok">Full dose &#183; no limits</span>
+        </figcaption>
+      </figure>
+
+      <!-- Breath strip · 32 × 22 × 0.06 mm → 83 × 57 -->
+      <figure class="obj">
+        <div class="stage">
+          <svg width="83" height="57" viewBox="0 0 83 57" role="img" aria-label="Breath strip, 32 by 22 millimeters">
+            <rect x="1" y="1" width="81" height="55" rx="3" fill="var(--papery)" stroke="var(--lemon-deep)" stroke-width="1" opacity="0.9"/>
+            <line x1="8" y1="10" x2="75" y2="10" stroke="var(--lemon-deep)" stroke-width="0.75" opacity="0.35"/>
+            <line x1="8" y1="18" x2="75" y2="18" stroke="var(--lemon-deep)" stroke-width="0.75" opacity="0.25"/>
+          </svg>
+        </div>
+        <div class="profile">
+          <div class="profile-bar" style="width:83px;height:1px"></div>
+          <span class="profile-note">0.06 mm &#183; true scale would be invisible</span>
+        </div>
+        <figcaption>
+          <h3>Listerine-size strip</h3>
+          <p class="dims">32 &#215; 22 &#215; 0.06 mm &#183; ~50 mg</p>
+          <p class="payload">~20 mg actives</p>
+          <span class="chip warn">&#8776;5% of the dose</span>
+        </figcaption>
+      </figure>
+
+      <!-- Leaf wafer · 38 × 28 × 0.5 mm → 99 × 73 -->
+      <figure class="obj">
+        <div class="stage">
+          <svg width="99" height="74" viewBox="0 0 99 74" role="img" aria-label="Leaf wafer, 38 by 28 millimeters">
+            <path d="M2,37 Q50,-8 97,37 Q50,82 2,37 Z" fill="var(--lemon)" opacity="0.55" stroke="var(--lemon-deep)" stroke-width="1"/>
+            <line x1="4" y1="37" x2="95" y2="37" stroke="var(--lemon-deep)" stroke-width="0.75" opacity="0.5"/>
+            <path d="M25,37 Q35,24 48,20 M25,37 Q35,50 48,54 M50,37 Q60,26 72,24 M50,37 Q60,48 72,50" fill="none" stroke="var(--lemon-deep)" stroke-width="0.5" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="profile">
+          <div class="profile-bar" style="width:99px;height:1.3px"></div>
+          <span class="profile-note">0.5 mm &#183; card-stock weight</span>
+        </div>
+        <figcaption>
+          <h3>Single leaf wafer</h3>
+          <p class="dims">38 &#215; 28 &#215; 0.5 mm &#183; ~650 mg</p>
+          <p class="payload">400 mg actives</p>
+          <span class="chip ok">Full dose</span>
+        </figcaption>
+      </figure>
+
+      <!-- Two-leaf serve · 28 × 20 × 0.5 mm each → 73 × 52 each, fanned -->
+      <figure class="obj">
+        <div class="stage">
+          <svg width="96" height="70" viewBox="0 0 96 70" role="img" aria-label="Two smaller leaf wafers, 28 by 20 millimeters each">
+            <g transform="rotate(-10 48 40)">
+              <path d="M2,32 Q37,-4 72,32 Q37,68 2,32 Z" fill="var(--lemon)" opacity="0.4" stroke="var(--lemon-deep)" stroke-width="1"/>
+            </g>
+            <g transform="translate(22,8) rotate(8 37 31)">
+              <path d="M2,31 Q37,-3 72,31 Q37,65 2,31 Z" fill="var(--lemon)" opacity="0.6" stroke="var(--lemon-deep)" stroke-width="1"/>
+              <line x1="5" y1="31" x2="69" y2="31" stroke="var(--lemon-deep)" stroke-width="0.6" opacity="0.5"/>
+            </g>
+          </svg>
+        </div>
+        <div class="profile">
+          <div class="profile-bar" style="width:73px;height:1.3px"></div>
+          <span class="profile-note">0.5 mm each &#183; &#215;2</span>
+        </div>
+        <figcaption>
+          <h3>Two-leaf serve</h3>
+          <p class="dims">28 &#215; 20 &#215; 0.5 mm &#183; ~325 mg each</p>
+          <p class="payload">200 mg actives per leaf</p>
+          <span class="chip ok">Full dose (pair)</span>
+        </figcaption>
+      </figure>
+
+      <!-- Mini-tab · ⌀13 × 4 mm → 34 dia -->
+      <figure class="obj">
+        <div class="stage">
+          <svg width="34" height="34" viewBox="0 0 34 34" role="img" aria-label="Fast-dissolve tablet, 13 millimeter diameter">
+            <circle cx="17" cy="17" r="16" fill="var(--papery)" stroke="var(--metal)" stroke-width="1"/>
+            <line x1="4" y1="17" x2="30" y2="17" stroke="var(--metal)" stroke-width="1" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="profile">
+          <div class="profile-bar" style="width:34px;height:10.4px;border-radius:3px"></div>
+          <span class="profile-note">4 mm &#183; two nickels</span>
+        </div>
+        <figcaption>
+          <h3>Fast-dissolve mini-tab</h3>
+          <p class="dims">&#8960;13 &#215; 4 mm &#183; ~600 mg</p>
+          <p class="payload">400 mg actives</p>
+          <span class="chip ok">Full dose</span>
+        </figcaption>
+      </figure>
+
+      <!-- Gummy · 20 × 20 × 8 mm → 52 × 52 -->
+      <figure class="obj">
+        <div class="stage">
+          <svg width="52" height="52" viewBox="0 0 52 52" role="img" aria-label="Square gummy, 20 by 20 millimeters">
+            <rect x="1" y="1" width="50" height="50" rx="11" fill="var(--lemon)" opacity="0.85" stroke="var(--lemon-deep)" stroke-width="1"/>
+            <rect x="7" y="6" width="38" height="16" rx="8" fill="#FFFFFF" opacity="0.28"/>
+            <circle cx="12" cy="38" r="1.2" fill="#FFFFFF" opacity="0.55"/>
+            <circle cx="20" cy="43" r="1" fill="#FFFFFF" opacity="0.5"/>
+            <circle cx="33" cy="40" r="1.2" fill="#FFFFFF" opacity="0.55"/>
+            <circle cx="41" cy="34" r="1" fill="#FFFFFF" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="profile">
+          <div class="profile-bar" style="width:52px;height:21px;border-radius:5px"></div>
+          <span class="profile-note">8 mm &#183; a chunky one</span>
+        </div>
+        <figcaption>
+          <h3>Gummy</h3>
+          <p class="dims">20 &#215; 20 &#215; 8 mm &#183; ~4 g</p>
+          <p class="payload">400 mg actives</p>
+          <span class="chip warn">Full dose &#183; won't dissolve cold</span>
+        </figcaption>
+      </figure>
+
+      <!-- US quarter · ⌀24.26 × 1.75 mm → 63 dia -->
+      <figure class="obj">
+        <div class="stage">
+          <svg width="63" height="63" viewBox="0 0 63 63" role="img" aria-label="US quarter for scale, 24.3 millimeter diameter">
+            <circle cx="31.5" cy="31.5" r="30.5" fill="var(--metal)" opacity="0.55"/>
+            <circle cx="31.5" cy="31.5" r="30.5" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="1.5 1.5"/>
+            <circle cx="31.5" cy="31.5" r="25" fill="none" stroke="var(--muted)" stroke-width="0.5" opacity="0.6"/>
+            <text x="31.5" y="36" text-anchor="middle" font-size="9" fill="var(--ink)" opacity="0.65">25&#162;</text>
+          </svg>
+        </div>
+        <div class="profile">
+          <div class="profile-bar" style="width:63px;height:4.5px;border-radius:2px;opacity:0.6"></div>
+          <span class="profile-note">1.75 mm</span>
+        </div>
+        <figcaption>
+          <h3>US quarter</h3>
+          <p class="dims">&#8960;24.3 &#215; 1.75 mm &#183; 5.67 g</p>
+          <p class="payload">for scale</p>
+          <span class="chip ref">Reference</span>
+        </figcaption>
+      </figure>
+
+    </div>
+  </div>
+  <p class="scale-note">Drawn at 2.6 px per mm. Relative sizes are exact; your screen decides absolute size — calibrate against the quarter.</p>
+
+  <h2>The same numbers, side by side</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Format</th>
+          <th>Footprint</th>
+          <th>Thickness</th>
+          <th>Total mass</th>
+          <th>Actives carried</th>
+          <th>% of can's dose</th>
+          <th>Dissolves in a cold drink?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="bench-row">
+          <td>Brez Flow can (benchmark)</td>
+          <td class="num">&#8960;58 &#215; 157 mm</td>
+          <td class="num">—</td>
+          <td class="num">372 g</td>
+          <td class="num">≈400 mg</td>
+          <td class="num">100%</td>
+          <td><span class="yes">Is the drink</span></td>
+        </tr>
+        <tr>
+          <td>Pink 2 oz shot</td>
+          <td class="num">&#8960;45 &#215; 75 mm</td>
+          <td class="num">—</td>
+          <td class="num">~130 g (glass + liquid)</td>
+          <td class="num">400 mg (room for ~1.5 g)</td>
+          <td class="num">100%</td>
+          <td><span class="yes">Pours into anything — or drink it straight</span></td>
+        </tr>
+        <tr>
+          <td>Listerine-size strip</td>
+          <td class="num">32 &#215; 22 mm</td>
+          <td class="num">0.06 mm</td>
+          <td class="num">~50 mg</td>
+          <td class="num">~20 mg</td>
+          <td class="num">≈5%</td>
+          <td><span class="yes">Yes, instantly</span></td>
+        </tr>
+        <tr>
+          <td>Single leaf wafer</td>
+          <td class="num">38 &#215; 28 mm</td>
+          <td class="num">0.5 mm</td>
+          <td class="num">~650 mg</td>
+          <td class="num">400 mg</td>
+          <td class="num">100%</td>
+          <td><span class="yes">Yes, ~60–90 s</span></td>
+        </tr>
+        <tr>
+          <td>Two-leaf serve</td>
+          <td class="num">28 &#215; 20 mm &#215;2</td>
+          <td class="num">0.5 mm each</td>
+          <td class="num">~325 mg each</td>
+          <td class="num">200 mg each</td>
+          <td class="num">100% as a pair</td>
+          <td><span class="yes">Yes, faster than one</span></td>
+        </tr>
+        <tr>
+          <td>Fast-dissolve mini-tab</td>
+          <td class="num">&#8960;13 mm</td>
+          <td class="num">4 mm</td>
+          <td class="num">~600 mg</td>
+          <td class="num">400 mg</td>
+          <td class="num">100%</td>
+          <td><span class="yes">Yes, with fizz</span></td>
+        </tr>
+        <tr>
+          <td>Gummy</td>
+          <td class="num">20 &#215; 20 mm</td>
+          <td class="num">8 mm</td>
+          <td class="num">~4 g</td>
+          <td class="num">400 mg</td>
+          <td class="num">100%</td>
+          <td><span class="no">No — chew it, or rim garnish</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Assumptions behind the numbers</h2>
+  <div class="notes">
+    <ul>
+      <li><strong>The 400 mg payload:</strong> lion's mane 10:1 dual extract ~150 mg (an honest equivalence to the can's "2,200 mg" fresh-weight claim), L-theanine 100 mg (pure amino acid — cannot be concentrated), high-theobromine cacao extract ~100 mg, spray-dried black seed oil ~50 mg.</li>
+      <li><strong>Pink shot:</strong> 60 mL of water dissolves the whole payload with roughly 3&#215; headroom — the constraints shift from mass to chemistry. Black seed oil needs an emulsifier (quillaja or gum acacia) or it rings the neck; lion's mane and cacao extracts run brown, so a true pink needs decolorized extracts plus an acid-stable natural pink (hibiscus or dragon-fruit pigments hold at pH&nbsp;&lt;&nbsp;4, which the lemon profile wants anyway); keep theobromine under ~0.3&nbsp;g/L or it recrystallizes when chilled. Clear flint glass invites UV fading of both pigment and actives — spec a UV-inhibited flint or accept a shorter shelf life than amber/cobalt would give.</li>
+      <li><strong>Strip:</strong> film payloads cap near 30–50% of total mass; a breath-strip-size film tops out around 20 mg of actives, hence ≈5% of the dose.</li>
+      <li><strong>Leaf wafer:</strong> ~60% active loading in a 0.5 mm pullulan/HPMC film at ~1.2 g/cm&#179;. Two smaller leaves cast with tighter dose uniformity than one large one.</li>
+      <li><strong>Mini-tab:</strong> compressed fast-dissolve format. A fully effervescent version (citric + bicarbonate couple) grows to roughly &#8960;16 &#215; 4.5 mm — still smaller than the quarter.</li>
+      <li><strong>Gummy:</strong> supplement gummies run ~10% active loading, so 400 mg of actives needs a ~4 g piece — one large square gummy, or two standard bears. Gelatin/pectin does not dissolve in a cold drink; it pairs with one, or rides the rim as a garnish.</li>
+    </ul>
+  </div>
+</main>
