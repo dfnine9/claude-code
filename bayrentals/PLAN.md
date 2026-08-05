@@ -1,4 +1,4 @@
-# BayRentals Platform — Full Build Plan (v5, one-shot ultracode edition)
+# BayRentals Platform — Full Build Plan (v6, one-shot ultracode edition)
 
 > **How to use this document:** This is a ONE-SHOT plan. Put this file in an empty
 > directory (or repo), open Claude Code there, and send exactly:
@@ -20,7 +20,8 @@
 
 The one-shot deliverable is the **complete repository AND a live staging deployment**:
 every migration, the RLS test suite, the pricing engine with its exhaustive tests,
-every edge function, the full SwiftUI app, the web widget, CI, and docs.
+every edge function, the full SwiftUI app, the **owner console deployed on Vercel**
+(§12), the web widget, CI, and docs.
 
 **Daniel's accounts (Supabase, Stripe, Postmark, Apple Developer) already exist and
 this machine is logged in.** So do NOT default to stubs — the preflight wave inventories
@@ -43,8 +44,8 @@ Execute as waves. Parallelize within a wave; verify between waves. Use worktree
 isolation for parallel agents that write files.
 
 - **Wave P — Preflight (single agent, first).** Inventory the machine and accounts
-  before anything is built: Xcode + simulators present? `supabase`, `stripe`, `gh`
-  CLIs installed and logged in as whom? Which API keys/tokens are reachable (Stripe
+  before anything is built: Xcode + simulators present? `supabase`, `stripe`, `gh`,
+  `vercel` CLIs installed and logged in as whom? Which API keys/tokens are reachable (Stripe
   test keys, Postmark server + inbound tokens, App Store Connect API key, APNs key)?
   Write the inventory to `docs/PREFLIGHT.md` with a clear table: WIRED (real service
   will be used) vs STUBBED (credential unreachable → GO-LIVE item). Install missing
@@ -67,7 +68,8 @@ isolation for parallel agents that write files.
   6. iOS staff surface: Today, OpsCalendar, wizards, DamageCompare, Claims, Fleet,
      Insights, TuroReviewQueue
   7. Web widget
-  8. CI workflows + `docs/SETUP.md` + `docs/POLICIES.md` placeholders
+  8. Owner console (Next.js god-mode dashboard, §12)
+  9. CI workflows + `docs/SETUP.md` + `docs/POLICIES.md` placeholders
   Rule: an agent touches only its module's directory; cross-module needs go through
   the Wave 0 contracts.
 - **Wave 2 — Integration + real deployment (single agent).** Merge worktrees, resolve
@@ -76,22 +78,23 @@ isolation for parallel agents that write files.
   + unit tests against the simulator. Then deploy for real per the preflight
   inventory: create/link the **staging** Supabase project, push migrations, deploy all
   functions, `supabase secrets set` from the real credentials, register the Stripe
-  test-mode webhook endpoint, configure the Postmark inbound webhook URL, and point a
-  simulator build at staging — a booking made in the simulator must land in the real
-  staging database.
+  test-mode webhook endpoint, configure the Postmark inbound webhook URL, deploy the
+  owner console to Vercel (env vars set, admin login working against staging), and
+  point a simulator build at staging — a booking made in the simulator must land in
+  the real staging database and appear on the console's Overview.
 - **Wave 3 — Adversarial verification (parallel skeptic agents, loop until dry).**
   Independent auditors, each prompted to find real failures, with findings fixed and
   re-audited until two consecutive sweeps find nothing new:
   - RLS/security audit (customer reaching another's data? anon reaching PII?)
   - Pricing audit: recompute §10 scenarios by hand, compare to module output
-  - Failure-mode drill: every row of the §12 catalog — does the designed behavior
+  - Failure-mode drill: every row of the §13 catalog — does the designed behavior
     exist in code, and where?
   - Booking race-condition review (exclusion constraint actually the last guard?)
   - Completeness critic: every section of this plan is either implemented or has an
     explicit GO-LIVE.md line — nothing dropped silently
 - **Wave 4 — Handoff (single agent).** Final `docs/GO-LIVE.md` (ordered: accounts,
   secrets, `supabase link` + deploy, Turo email forward, on-device test day, TestFlight,
-  App Store submission — with §13's on-device acceptance criteria mapped in), README
+  App Store submission — with §14's on-device acceptance criteria mapped in), README
   quickstart, and a build report: what was built, test counts, what awaits Daniel.
 
 ### What stays human, honestly
@@ -100,7 +103,7 @@ Even with full machine and account access, these need Daniel: camera flows, the 
 counter drill, the 2-minute pickup target, and the zero-training test (physical iPhone
 + real staff — preserved as GO-LIVE.md's "first TestFlight day" checklist, not claimed
 as done); the Turo email auto-forward rule in his mailbox; the business policy numbers
-(§16); attorney review of the contract template; flipping Stripe from test to live; and
+(§17); attorney review of the contract template; flipping Stripe from test to live; and
 App Store review itself. A one-shot that pretends otherwise is lying; this one doesn't.
 
 ---
@@ -137,6 +140,7 @@ Apple-native experience — for the customer AND for staff at the counter.
 | E-signature | **Built-in**: finger-signing in app, self-generated PDF, own audit trail |
 | Payments | **Stripe** — PaymentSheet with **Apple Pay**, rental charge + refundable deposit hold |
 | Pricing | **Server-side pricing engine**, single shared module; clients only display quotes |
+| Owner console | **Next.js + shadcn/ui on Vercel** — admin-only god mode over the same Supabase backend |
 | Transactional email | Postmark (or Resend) — also provides inbound parsing for Turo emails |
 | Source of truth for availability | **Our database**, always. Turo bookings flow in; they never own the calendar. |
 
@@ -193,37 +197,36 @@ The integration that works and is ToS-safe:
 ## 5. Architecture
 
 ```
-┌─────────────┐   ┌──────────────────┐   ┌─────────────────┐
-│  iPhone app │   │  Bayrentals.com  │   │ Turo booking     │
-│  (SwiftUI)  │   │  booking widget  │   │ emails (forward) │
-└──────┬──────┘   └────────┬─────────┘   └────────┬────────┘
-       │ ▲ Realtime        │                      │ Postmark inbound webhook
-       ▼ │                 ▼                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│                        SUPABASE                             │
-│  Postgres (RLS) · Auth · Storage · Realtime · pg_cron       │
-│                                                             │
-│  Functions: quote · create-booking · cancel-booking ·       │
-│  turo-inbound · generate-contract · finalize-contract ·     │
-│  stripe-webhook · send-push · wallet-pass · scheduled-runner│
-└──────────────┬──────────────────────────┬───────────────────┘
-               ▼                          ▼
-            Stripe                  Postmark (outbound
-   (Apple Pay, payments,            email: confirmations,
-    deposit holds, refunds,         signed contracts,
-    Radar fraud rules)              receipts)
+┌─────────────┐ ┌──────────────────┐ ┌─────────────────┐ ┌──────────────────┐
+│  iPhone app │ │  Bayrentals.com  │ │ Turo booking     │ │  Owner console   │
+│  (SwiftUI)  │ │  booking widget  │ │ emails (forward) │ │ (Next.js/Vercel) │
+└──────┬──────┘ └────────┬─────────┘ └────────┬────────┘ └────────┬─────────┘
+       │ ▲ Realtime      │                    │ Postmark          │ ▲ Realtime
+       ▼ │               ▼                    ▼ inbound webhook   ▼ │
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                SUPABASE                                     │
+│        Postgres (RLS) · Auth · Storage · Realtime · pg_cron                 │
+│                                                                             │
+│  Functions: quote · create-booking · cancel-booking · turo-inbound ·        │
+│  generate-contract · finalize-contract · stripe-webhook · send-push ·       │
+│  wallet-pass · scheduled-runner                                             │
+└──────────────┬──────────────────────────────────────┬───────────────────────┘
+               ▼                                      ▼
+            Stripe                              Postmark (outbound
+   (Apple Pay, payments, deposit                email: confirmations,
+    holds, refunds, Radar rules)                signed contracts, receipts)
 ```
 
-Admin/back-office: use **Supabase Studio** for raw data in early phases; the staff app's
-Ops tools + Insights screen are the real back office. A dedicated admin web dashboard is
-parked (§14) unless a real need appears.
+Back-office split: the **staff app** is for the counter and the pocket; the **owner
+console** (§12) is mission control from the laptop — full visibility and god-mode
+editing. Supabase Studio remains the raw escape hatch during early development only.
 
 ## 6. Repository layout (dedicated repo — see Phase 0)
 
 ```
 bayrentals/                  # repo ROOT (its own private GitHub repo)
 ├── PLAN.md                  # this file
-├── .github/workflows/       # CI (see §12)
+├── .github/workflows/       # CI (see §13)
 ├── supabase/
 │   ├── config.toml
 │   ├── migrations/          # SQL migrations (numbered, never edited after merge)
@@ -249,6 +252,7 @@ bayrentals/                  # repo ROOT (its own private GitHub repo)
 │       ├── Models/
 │       ├── Services/
 │       └── Views/{Auth,Fleet,Booking,Trips,Staff,Insights,Account}/
+├── admin/                   # Owner console — Next.js god-mode dashboard on Vercel
 ├── web-widget/              # Phase 4: embeddable booking widget for Bayrentals.com
 └── docs/                    # SETUP.md, OPEN-ITEMS.md, POLICIES.md, GO-LIVE.md
 ```
@@ -318,7 +322,7 @@ Enable extensions: `btree_gist` (needed for the no-double-booking constraint),
 - `cancellation_tiers jsonb` — e.g. `[{"hours_before":72,"refund_pct":100},
   {"hours_before":24,"refund_pct":50},{"hours_before":0,"refund_pct":0}]`
 - `tax_rate_pct numeric`, `booking_fee_cents int`
-- Values live in `docs/POLICIES.md` until Daniel confirms them (§15) — seed with
+- Values live in `docs/POLICIES.md` until Daniel confirms them (§17) — seed with
   placeholders clearly marked `TODO`.
 
 **`rate_rules`** — pricing engine inputs, evaluated by priority
@@ -405,6 +409,13 @@ scheduled runner (event + booking + recipient unique)
   screen instead of breaking against a newer API
 - `maintenance_message text nullable` — emergency banner without an app release
 
+**`admin_audit`** — every mutation made through the owner console
+- `id uuid PK`, `actor uuid FK`, `table_name text`, `row_id uuid`
+- `action text check in ('insert','update','delete','void')`
+- `before jsonb`, `after jsonb`, `note text nullable`, `created_at timestamptz`
+- Append-only (no UPDATE/DELETE grants, even for admin) — god mode is powerful, not
+  invisible.
+
 ### Row-level security
 
 - `admin`/`staff` (checked via a `security definer` helper reading `profiles.role`):
@@ -416,7 +427,7 @@ scheduled runner (event + booking + recipient unique)
   view** exposing only `(car_id, start_at, end_at)` of non-canceled bookings — never
   customer data. This view + the `quote` function power the public website widget.
 - **RLS is tested, not assumed** — `supabase/tests/` contains per-role tests that run
-  in CI (§12).
+  in CI (§13).
 
 ### Storage buckets
 
@@ -564,9 +575,10 @@ lives here and nowhere else**. Secrets via `supabase secrets set`: `STRIPE_SECRE
 - **`FleetView`** (in Ops) — per-car: status, upcoming services (due by date or miles,
   auto-flagged), registration/inspection expiry, service history; scheduling a service
   blocks the calendar.
-- **`InsightsView`** (admin) — the owner dashboard, in the same app: utilization % per
-  car, revenue per car per month, direct vs Turo mix, upcoming 7 days. Computed from a
-  few SQL views — no analytics vendor.
+- **`InsightsView`** (admin) — the pocket version of the owner console (§12):
+  utilization % per car, revenue per car per month, direct vs Turo mix, upcoming
+  7 days. Computed from the same SQL views the console charts use — one set of
+  numbers, two screens.
 - `TuroReviewQueueView` — `needs_review` emails: parsed guess shown, staff fixes
   car/dates, one tap creates the booking. Target: under 30 seconds per item.
 
@@ -624,15 +636,58 @@ function from the two condition reports + `policies`, with every line waivable b
 All sends logged to `notifications_log`, which doubles as the scheduled runner's
 idempotency guard — no event fires twice.
 
-## 12. Engineering practices
+## 12. Owner console — god mode on Vercel
+
+One clean, modern web app, admin-only, hosted on **Vercel**, talking to the same
+Supabase backend. The staff app is for the counter; the console is mission control
+from the laptop — every number visible, everything editable.
+
+**Tech:** Next.js (App Router) + Tailwind + shadcn/ui + Recharts. Same passwordless
+login (role must be `admin` — staff and customers are turned away). Reads/writes go
+through supabase-js under the admin's RLS role; the few privileged operations that
+need the service-role key run in server actions only, with the key held as a Vercel
+env var — it never reaches the browser. Vercel git integration: every PR gets a
+preview deployment, `main` deploys to production.
+
+**Screens:**
+
+- **Overview** — the numbers at a glance: MTD revenue with trend, utilization % per
+  car, active rentals right now, deposits currently held, upcoming pickups/returns,
+  direct vs Turo mix; 30/90-day revenue and utilization charts. Live via Realtime —
+  a booking anywhere moves the numbers while you watch.
+- **Bookings** — filterable, searchable table of every booking ever; open any of them
+  to edit dates, status, or line items; create bookings and manual blocks; cancel with
+  policy override when a situation calls for grace.
+- **Fleet** — car CRUD with drag-and-drop photo manager, per-car rate-rule editor,
+  extras catalog, services and registration/inspection tracking.
+- **Customers** — full profiles, license images, rental history, notes.
+- **Contracts** — template editor with live merge-field preview; the signed archive
+  (hash-verified), void/regenerate.
+- **Money** — payments ledger, return charges, claims workbench, the daily
+  reconciliation report, one-click deep links into the Stripe dashboard.
+- **Turo** — review queue (same actions as the app), raw inbound email log, reprocess
+  button for any email.
+- **Policies** — edit the live business rules (mileage caps, late fees, cancellation
+  tiers, tax) with validation and change history; takes effect on the next quote, no
+  deploy needed.
+- **System** — notifications log, `app_config` (minimum build, maintenance banner),
+  and the full `admin_audit` trail.
+
+**God-mode rules:** the console can edit anything the system stores — but every
+mutation lands in `admin_audit` (who, what, before/after), destructive actions require
+a typed confirmation, and overrides that would break invariants are still refused.
+An overlapping booking stays impossible and prices still come from the pricing engine:
+**god mode bends policy, never physics.**
+
+## 13. Engineering practices
 
 ### Environments
 
-| Env | Backend | App |
-|---|---|---|
-| Local | `supabase start` (Docker) | Simulator, `Config.local.xcconfig` → local |
-| Staging | Supabase project `bayrentals-staging`, Stripe test mode | TestFlight internal, bundle id suffix `.staging` |
-| Prod | Supabase project `bayrentals`, Stripe live | App Store |
+| Env | Backend | App | Owner console |
+|---|---|---|---|
+| Local | `supabase start` (Docker) | Simulator, `Config.local.xcconfig` → local | `next dev` |
+| Staging | Supabase project `bayrentals-staging`, Stripe test mode | TestFlight internal, bundle id suffix `.staging` | Vercel preview deployments |
+| Prod | Supabase project `bayrentals`, Stripe live | App Store | Vercel production (`main`) |
 
 Migrations flow local → staging → prod via CI; never run by hand against prod.
 
@@ -684,17 +739,17 @@ during the build, add it here with its designed behavior before fixing it.
   only via short-lived signed URLs; never in logs or analytics.
 - Contracts and condition photos are legal evidence: **never deleted, only
   void/superseded**. License photos: retention period is a `policies` value (attorney
-  input, §15), enforced by the scheduled runner.
+  input, §17), enforced by the scheduled runner.
 - Account deletion (App Store requirement): in-app request → anonymize profile, keep
   contractual/financial records as legally required.
 - Supabase PITR backups on from day one (staging + prod); quarterly restore drill noted
   in `docs/SETUP.md`.
 - Stripe Radar default rules on; deposits sized per car (`deposit_cents`) as the main
-  fraud lever. (Optional stronger step is parked: §14.)
+  fraud lever. (Optional stronger step is parked: §15.)
 - Privacy nutrition labels + purpose strings (camera, location, notifications) written
   in Phase 6 from the PII inventory, not improvised in App Store Connect.
 
-## 13. Build phases
+## 14. Build phases
 
 **In one-shot mode (§0) these phases are the milestone structure, not the schedule:**
 the waves build everything at once, and each phase's acceptance list becomes either an
@@ -709,7 +764,7 @@ App Store secrets and CI live here).
 2. Copy the contents of the `bayrentals/` directory (this file and everything beside
    it) to the new repo's **root**; initial commit; push.
 3. Scaffold the repo layout from §6, `.gitignore` (xcodeproj, xcuserdata,
-   `Config.local.xcconfig`, `.env`, `supabase/.temp`), CI skeleton from §12, and
+   `Config.local.xcconfig`, `.env`, `supabase/.temp`), CI skeleton from §13, and
    `docs/SETUP.md` + `docs/OPEN-ITEMS.md` + `docs/POLICIES.md` (placeholder business
    numbers marked TODO).
 4. All further work happens in the new repo.
@@ -774,32 +829,34 @@ as `payments` rows and on the customer receipt; self-serve cancellation at T-48h
 refunds the right tier percentage; every matrix event observed firing exactly once
 (check `notifications_log`); Wallet pass installs and updates on a date change.
 
-### Phase 6 — Fleet ops, insights & launch
+### Phase 6 — Fleet ops, owner console & launch
 FleetView (services, registration/inspection tracking, service-blocks calendar),
-ClaimsView complete, InsightsView (utilization, revenue per car, direct/Turo mix),
-post-trip review prompts; Sentry release tracking; account deletion flow; App Store
-assets, privacy nutrition labels, purpose strings; TestFlight beta with real staff,
-then submission.
+ClaimsView complete, InsightsView (utilization, revenue per car, direct/Turo mix);
+**the owner console (§12) complete and deployed on Vercel**; post-trip review prompts;
+Sentry release tracking; account deletion flow; App Store assets, privacy nutrition
+labels, purpose strings; TestFlight beta with real staff, then submission.
 **Accept:** a service due by odometer surfaces on Today and blocks the calendar when
-scheduled; a claim goes open → charged with evidence attached; Insights numbers match
-hand-computed SQL for the seed data; **the zero-training test: someone who has never
+scheduled; a claim goes open → charged with evidence attached; Insights and console
+Overview numbers match hand-computed SQL for the seed data; a booking made in the app
+appears on the console Overview without a refresh; a policy edit in the console changes
+the next quote; every console mutation shows up in `admin_audit`, and a staff-role
+login is refused at the console door; **the zero-training test: someone who has never
 seen the app completes a full pickup and a full return unassisted**; every row of the
-failure-mode catalog (§12) has been drilled at least once; TestFlight build used for
+failure-mode catalog (§13) has been drilled at least once; TestFlight build used for
 one real rental day without a blocker; App Store submission passes review.
 
-## 14. Parking lot (post-launch, do not build now)
+## 15. Parking lot (post-launch, do not build now)
 
 - Live Activity / Dynamic Island during active rental (return countdown)
 - SMS reminders via Twilio (email + push first; add SMS only if no-shows happen)
 - Web-based remote signing page for customers without the app
 - Stripe Identity selfie-match verification, behind a per-car flag (luxury cars)
 - Loyalty / repeat-renter discounts, promo codes
-- Admin web dashboard (if Supabase Studio + staff app ever feel insufficient)
 - Multi-location support, additional staff roles/permissions
 - Home-screen widget (today's pickups/returns) and Siri App Intents
 - Android (React Native or Kotlin — revisit demand after iOS launch)
 
-## 15. Working agreements for Claude
+## 16. Working agreements for Claude
 
 - Supabase CLI for everything backend: `supabase start`, `supabase db reset`,
   `supabase functions serve`. Migrations are append-only — never edit one after merge.
@@ -817,11 +874,11 @@ one real rental day without a blocker; App Store submission passes review.
 - When something needs Daniel (accounts, credentials, a decision), add it to
   `docs/OPEN-ITEMS.md` and continue with what's unblocked.
 
-## 16. Open items for Daniel (not Claude)
+## 17. Open items for Daniel (not Claude)
 
-1. Accounts (Supabase, Stripe, Postmark, Apple Developer) already exist and the
-   machine is logged in — the preflight wave (§0) verifies each and reports anything
-   it can't reach. Enable Apple Pay in the Stripe dashboard if not already on.
+1. Accounts (Supabase, Stripe, Postmark, Apple Developer, Vercel) already exist and
+   the machine is logged in — the preflight wave (§0) verifies each and reports
+   anything it can't reach. Enable Apple Pay in the Stripe dashboard if not already on.
 2. Set up email auto-forward of Turo notifications to the Postmark inbound address
    (Claude will print the exact address in the build report / GO-LIVE.md).
 3. Send the current paper rental agreement to use as the contract template — and have
