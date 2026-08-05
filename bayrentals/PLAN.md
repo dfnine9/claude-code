@@ -1,4 +1,4 @@
-# BayRentals Platform — Full Build Plan (v4, one-shot ultracode edition)
+# BayRentals Platform — Full Build Plan (v5, one-shot ultracode edition)
 
 > **How to use this document:** This is a ONE-SHOT plan. Put this file in an empty
 > directory (or repo), open Claude Code there, and send exactly:
@@ -18,20 +18,38 @@
 
 ### What "one shot" delivers
 
-The one-shot deliverable is the **complete repository**: every migration, the RLS test
-suite, the pricing engine with its exhaustive tests, every edge function, the full
-SwiftUI app, the web widget, CI, and docs — all buildable and verifiable **locally with
-zero external accounts**. Every external service (Stripe, Postmark, APNs, Wallet) is
-called through a thin client interface with secrets read from `.env.example` /
-`Config.local.xcconfig` placeholders, so the code is complete and tests run against
-stubs. Anything that genuinely requires Daniel's accounts or a physical iPhone is
-written into **`docs/GO-LIVE.md`** as an ordered checklist — never silently skipped.
+The one-shot deliverable is the **complete repository AND a live staging deployment**:
+every migration, the RLS test suite, the pricing engine with its exhaustive tests,
+every edge function, the full SwiftUI app, the web widget, CI, and docs.
+
+**Daniel's accounts (Supabase, Stripe, Postmark, Apple Developer) already exist and
+this machine is logged in.** So do NOT default to stubs — the preflight wave inventories
+what is actually reachable and wires up real services wherever authenticated: create/
+link the staging Supabase project, push migrations, deploy functions, set secrets from
+the real credentials, use Stripe **test mode** keys, a Postmark server token, and the
+APNs key if retrievable. External clients still go through thin interfaces so tests run
+hermetically, but the deployed staging environment is real. A stub is the fallback ONLY
+where a credential genuinely can't be reached — and every such gap is written into
+**`docs/GO-LIVE.md`** as an ordered checklist item, never silently skipped.
+
+Hard safety rules with real accounts: Stripe stays in **test mode** throughout the one
+shot (going live is a human decision in GO-LIVE.md); never touch a production Supabase
+project that already hosts other data; anything that would incur new billing (paid
+tiers, purchases) is a GO-LIVE item, not an autonomous action.
 
 ### Orchestration blueprint
 
 Execute as waves. Parallelize within a wave; verify between waves. Use worktree
 isolation for parallel agents that write files.
 
+- **Wave P — Preflight (single agent, first).** Inventory the machine and accounts
+  before anything is built: Xcode + simulators present? `supabase`, `stripe`, `gh`
+  CLIs installed and logged in as whom? Which API keys/tokens are reachable (Stripe
+  test keys, Postmark server + inbound tokens, App Store Connect API key, APNs key)?
+  Write the inventory to `docs/PREFLIGHT.md` with a clear table: WIRED (real service
+  will be used) vs STUBBED (credential unreachable → GO-LIVE item). Install missing
+  CLIs; anything needing an interactive login, surface to Daniel immediately rather
+  than discovering it mid-run.
 - **Wave 0 — Scaffold (single agent).** Repo layout (§6), `.gitignore`, CI skeleton,
   `docs/` stubs, and — critically — the **shared contracts** the parallel agents build
   against: SQL table definitions (§7) frozen into an initial migration draft, TypeScript
@@ -52,10 +70,15 @@ isolation for parallel agents that write files.
   8. CI workflows + `docs/SETUP.md` + `docs/POLICIES.md` placeholders
   Rule: an agent touches only its module's directory; cross-module needs go through
   the Wave 0 contracts.
-- **Wave 2 — Integration (single agent).** Merge worktrees, resolve seams, make the
-  whole tree build: `supabase db reset` green with all database tests, `deno test`
-  green across functions, widget typecheck/build green, `xcodebuild build` if the host
-  has Xcode (record as a GO-LIVE item if not).
+- **Wave 2 — Integration + real deployment (single agent).** Merge worktrees, resolve
+  seams, make the whole tree build: `supabase db reset` green with all database tests,
+  `deno test` green across functions, widget typecheck/build green, `xcodebuild build`
+  + unit tests against the simulator. Then deploy for real per the preflight
+  inventory: create/link the **staging** Supabase project, push migrations, deploy all
+  functions, `supabase secrets set` from the real credentials, register the Stripe
+  test-mode webhook endpoint, configure the Postmark inbound webhook URL, and point a
+  simulator build at staging — a booking made in the simulator must land in the real
+  staging database.
 - **Wave 3 — Adversarial verification (parallel skeptic agents, loop until dry).**
   Independent auditors, each prompted to find real failures, with findings fixed and
   re-audited until two consecutive sweeps find nothing new:
@@ -73,11 +96,12 @@ isolation for parallel agents that write files.
 
 ### What stays human, honestly
 
-Camera flows, the offline counter drill, the 2-minute pickup target, and the
-zero-training test need a physical iPhone and real staff — they are preserved as
-GO-LIVE.md's "first TestFlight day" checklist, not claimed as done. Same for account
-creation, secret provisioning, attorney review of the contract template, and App Store
-review itself. A one-shot that pretends otherwise is lying; this one doesn't.
+Even with full machine and account access, these need Daniel: camera flows, the offline
+counter drill, the 2-minute pickup target, and the zero-training test (physical iPhone
++ real staff — preserved as GO-LIVE.md's "first TestFlight day" checklist, not claimed
+as done); the Turo email auto-forward rule in his mailbox; the business policy numbers
+(§16); attorney review of the contract template; flipping Stripe from test to live; and
+App Store review itself. A one-shot that pretends otherwise is lying; this one doesn't.
 
 ---
 
@@ -795,10 +819,11 @@ one real rental day without a blocker; App Store submission passes review.
 
 ## 16. Open items for Daniel (not Claude)
 
-1. Create accounts: Supabase project (staging + prod), Stripe (enable Apple Pay),
-   Postmark, Apple Developer Program ($99/yr — start now, review can take days).
+1. Accounts (Supabase, Stripe, Postmark, Apple Developer) already exist and the
+   machine is logged in — the preflight wave (§0) verifies each and reports anything
+   it can't reach. Enable Apple Pay in the Stripe dashboard if not already on.
 2. Set up email auto-forward of Turo notifications to the Postmark inbound address
-   (Claude will give the exact address in Phase 4).
+   (Claude will print the exact address in the build report / GO-LIVE.md).
 3. Send the current paper rental agreement to use as the contract template — and have
    an attorney bless the electronic version once (ESIGN-valid, but worth the check).
    Ask about license-photo retention period at the same time.
