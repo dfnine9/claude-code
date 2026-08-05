@@ -1,10 +1,83 @@
-# BayRentals Platform — Full Build Plan (v3)
+# BayRentals Platform — Full Build Plan (v4, one-shot ultracode edition)
 
-> **How to use this document:** Paste it into Claude Code as your first prompt (or say
-> "Read PLAN.md and start Phase 0"). It is a complete build spec: context, locked
-> decisions, seamlessness principles, data model, pricing engine, API surface, iOS app
-> structure, engineering practices, and phased tasks with acceptance criteria. Work
-> through the phases in order. Each phase ends with something usable in production.
+> **How to use this document:** This is a ONE-SHOT plan. Put this file in an empty
+> directory (or repo), open Claude Code there, and send exactly:
+>
+> ```
+> Read PLAN.md and build the entire BayRentals platform in one shot,
+> following its one-shot execution protocol. ultracode
+> ```
+>
+> The word **ultracode** opts Claude Code into multi-agent workflow orchestration —
+> it will fan out parallel subagents per the protocol in §0 instead of working
+> serially. Everything below §0 is the build spec those agents implement.
+
+---
+
+## 0. One-shot execution protocol (ultracode)
+
+### What "one shot" delivers
+
+The one-shot deliverable is the **complete repository**: every migration, the RLS test
+suite, the pricing engine with its exhaustive tests, every edge function, the full
+SwiftUI app, the web widget, CI, and docs — all buildable and verifiable **locally with
+zero external accounts**. Every external service (Stripe, Postmark, APNs, Wallet) is
+called through a thin client interface with secrets read from `.env.example` /
+`Config.local.xcconfig` placeholders, so the code is complete and tests run against
+stubs. Anything that genuinely requires Daniel's accounts or a physical iPhone is
+written into **`docs/GO-LIVE.md`** as an ordered checklist — never silently skipped.
+
+### Orchestration blueprint
+
+Execute as waves. Parallelize within a wave; verify between waves. Use worktree
+isolation for parallel agents that write files.
+
+- **Wave 0 — Scaffold (single agent).** Repo layout (§6), `.gitignore`, CI skeleton,
+  `docs/` stubs, and — critically — the **shared contracts** the parallel agents build
+  against: SQL table definitions (§7) frozen into an initial migration draft, TypeScript
+  types for API payloads and the quote's `line_items[]`, and Swift model definitions
+  mirroring them. These contracts are the interface between agents; later waves may
+  extend but not reshape them.
+- **Wave 1 — Parallel build (one agent per module, worktrees).**
+  1. Database: final migrations + RLS policies + `supabase/tests`
+  2. Pricing module (`_shared/pricing.ts`) — test-first, full unit suite (§10)
+  3. Edge functions, grouped: quote/create-booking/cancel-booking · contracts pair ·
+     turo-inbound (+ fixture corpus) · stripe-webhook/send-push/wallet-pass ·
+     scheduled-runner
+  4. iOS foundation: design system, models, API/auth services, offline queue
+  5. iOS customer surface: Browse, CarDetail, BookingFlow, MyTrips timeline, Account
+  6. iOS staff surface: Today, OpsCalendar, wizards, DamageCompare, Claims, Fleet,
+     Insights, TuroReviewQueue
+  7. Web widget
+  8. CI workflows + `docs/SETUP.md` + `docs/POLICIES.md` placeholders
+  Rule: an agent touches only its module's directory; cross-module needs go through
+  the Wave 0 contracts.
+- **Wave 2 — Integration (single agent).** Merge worktrees, resolve seams, make the
+  whole tree build: `supabase db reset` green with all database tests, `deno test`
+  green across functions, widget typecheck/build green, `xcodebuild build` if the host
+  has Xcode (record as a GO-LIVE item if not).
+- **Wave 3 — Adversarial verification (parallel skeptic agents, loop until dry).**
+  Independent auditors, each prompted to find real failures, with findings fixed and
+  re-audited until two consecutive sweeps find nothing new:
+  - RLS/security audit (customer reaching another's data? anon reaching PII?)
+  - Pricing audit: recompute §10 scenarios by hand, compare to module output
+  - Failure-mode drill: every row of the §12 catalog — does the designed behavior
+    exist in code, and where?
+  - Booking race-condition review (exclusion constraint actually the last guard?)
+  - Completeness critic: every section of this plan is either implemented or has an
+    explicit GO-LIVE.md line — nothing dropped silently
+- **Wave 4 — Handoff (single agent).** Final `docs/GO-LIVE.md` (ordered: accounts,
+  secrets, `supabase link` + deploy, Turo email forward, on-device test day, TestFlight,
+  App Store submission — with §13's on-device acceptance criteria mapped in), README
+  quickstart, and a build report: what was built, test counts, what awaits Daniel.
+
+### What stays human, honestly
+
+Camera flows, the offline counter drill, the 2-minute pickup target, and the
+zero-training test need a physical iPhone and real staff — they are preserved as
+GO-LIVE.md's "first TestFlight day" checklist, not claimed as done. Same for account
+creation, secret provisioning, attorney review of the contract template, and App Store
+review itself. A one-shot that pretends otherwise is lying; this one doesn't.
 
 ---
 
@@ -153,7 +226,7 @@ bayrentals/                  # repo ROOT (its own private GitHub repo)
 │       ├── Services/
 │       └── Views/{Auth,Fleet,Booking,Trips,Staff,Insights,Account}/
 ├── web-widget/              # Phase 4: embeddable booking widget for Bayrentals.com
-└── docs/                    # SETUP.md, OPEN-ITEMS.md, POLICIES.md
+└── docs/                    # SETUP.md, OPEN-ITEMS.md, POLICIES.md, GO-LIVE.md
 ```
 
 ## 7. Data model (Postgres migrations)
@@ -599,8 +672,11 @@ during the build, add it here with its designed behavior before fixing it.
 
 ## 13. Build phases
 
-Work in order. Commit per meaningful step. Each phase ends with the acceptance checks
-passing.
+**In one-shot mode (§0) these phases are the milestone structure, not the schedule:**
+the waves build everything at once, and each phase's acceptance list becomes either an
+automated verification gate (Wave 2/3) or a GO-LIVE.md checklist item (anything
+needing real accounts or a physical device). If executing incrementally instead, work
+the phases in order — each ends with something usable in production.
 
 ### Phase 0 — Dedicated repository + bootstrap
 This project must live in its own clean private repo (never alongside unrelated code —
