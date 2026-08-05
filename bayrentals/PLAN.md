@@ -1,10 +1,10 @@
-# BayRentals Platform — Full Build Plan (v6, one-shot ultracode edition)
+# Project Phantom — BayRentals Platform Build Plan (v7, one-shot ultracode edition)
 
 > **How to use this document:** This is a ONE-SHOT plan. Put this file in an empty
 > directory (or repo), open Claude Code there, and send exactly:
 >
 > ```
-> Read PLAN.md and build the entire BayRentals platform in one shot,
+> Read PLAN.md and build all of Project Phantom in one shot,
 > following its one-shot execution protocol. ultracode
 > ```
 >
@@ -110,9 +110,12 @@ App Store review itself. A one-shot that pretends otherwise is lying; this one d
 
 ## 1. Context
 
-You are building a full-stack rental car platform for **BayRentals** (Bayrentals.com), a
-small rental car company whose fleet is also listed on **Turo**. The owner (Daniel,
-daniel@dfnine.com) needs:
+This is **Project Phantom** — the codename for this plan and the whole build effort.
+What it delivers is a full-stack rental car platform for **BayRentals**
+(Bayrentals.com), a small rental car company whose fleet is also listed on **Turo**.
+Phantom names the mission; everything that ships — repo, app, App Store listing,
+emails, contracts, website — carries the **BayRentals** name, because that's the brand
+customers are renting from. The owner (Daniel, daniel@dfnine.com) needs:
 
 - An **iPhone app** used by BOTH customers (browse cars, book, pay) and staff
   (calendar, condition photos at pickup/return, contract signing at the counter).
