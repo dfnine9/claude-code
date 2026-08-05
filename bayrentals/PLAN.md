@@ -1,4 +1,4 @@
-# Project Phantom — BayRentals Platform Build Plan (v8, one-shot ultracode edition)
+# Project Phantom — BayRentals Platform Build Plan (v9, one-shot ultracode edition)
 
 > **How to use this document:** This is a ONE-SHOT plan. Put this file in an empty
 > directory (or repo), open Claude Code there, and send exactly:
@@ -53,10 +53,15 @@ isolation for parallel agents that write files.
   than discovering it mid-run.
 - **Wave 0 — Scaffold (single agent).** Repo layout (§6), `.gitignore`, CI skeleton,
   `docs/` stubs, and — critically — the **shared contracts** the parallel agents build
-  against: SQL table definitions (§7) frozen into an initial migration draft, TypeScript
-  types for API payloads and the quote's `line_items[]`, and Swift model definitions
-  mirroring them. These contracts are the interface between agents; later waves may
-  extend but not reshape them.
+  against: SQL table definitions (§7) frozen into an initial migration draft,
+  TypeScript types for API payloads and the quote's `line_items[]`, Swift model
+  definitions mirroring them, **the design-system component and service-protocol
+  signatures (so the two iOS surface agents build against module 4's real interfaces
+  instead of inventing divergent stubs), and single-owner subpaths for
+  `functions/_shared/` (`_shared/pricing/` belongs to the pricing agent;
+  `_shared/clients/` and `_shared/templates/` to the functions agents)**. These
+  contracts are the interface between agents; later waves may extend but not reshape
+  them.
 - **Wave 1 — Parallel build (one agent per module, worktrees).**
   1. Database: final migrations + RLS policies + `supabase/tests`
   2. Pricing module (`_shared/pricing.ts`) — test-first, full unit suite (§10)
@@ -78,10 +83,16 @@ isolation for parallel agents that write files.
   + unit tests against the simulator. Then deploy for real per the preflight
   inventory: create/link the **staging** Supabase project, push migrations, deploy all
   functions, `supabase secrets set` from the real credentials, register the Stripe
-  test-mode webhook endpoint, configure the Postmark inbound webhook URL, deploy the
-  owner console to Vercel (env vars set, admin login working against staging), and
-  point a simulator build at staging — a booking made in the simulator must land in
-  the real staging database and appear on the console's Overview.
+  test-mode webhook endpoint, configure the Postmark inbound webhook URL, **wire
+  Postmark in as Supabase Auth's custom SMTP with the OTP email template (the
+  built-in Supabase mailer is dev-only and rate-limited to a handful of emails per
+  hour — real passwordless login fails without this)**, deploy the owner console to
+  Vercel (env vars set, admin login working against staging), and point a simulator
+  build at staging — a booking made in the simulator must land in the real staging
+  database and appear on the console's Overview. For that gate, authenticate the
+  simulator session non-interactively (`supabase.auth.admin.generateLink`, or read
+  the OTP from a test inbox via the Postmark API) — Sign in with Apple can't be
+  driven autonomously.
 - **Wave 3 — Adversarial verification (parallel skeptic agents, loop until dry).**
   Independent auditors, each prompted to find real failures, with findings fixed and
   re-audited until two consecutive sweeps find nothing new:
@@ -266,7 +277,9 @@ bayrentals/                  # repo ROOT (its own private GitHub repo)
 ## 7. Data model (Postgres migrations)
 
 Enable extensions: `btree_gist` (needed for the no-double-booking constraint),
-`pgcrypto`, `pg_cron`.
+`pgcrypto`, `pg_cron`, and `pg_net` (pg_cron can only run SQL — invoking the
+scheduled-runner edge function and the DB webhooks that call `send-push` are HTTP
+calls, which is exactly what `pg_net` provides).
 
 ### Core tables
 
@@ -298,6 +311,9 @@ Enable extensions: `btree_gist` (needed for the no-double-booking constraint),
 - `license_number, license_state text`, `license_expiry date`, `date_of_birth date`
 - `license_photo_path text` (private bucket)
 - `license_verified_at timestamptz nullable` (set when barcode scan matched the photo)
+- `insurance_carrier text nullable`, `insurance_policy_number text nullable` — the
+  renter's insurance declaration every paper rental agreement carries; captured in
+  the booking flow or at the counter and merged into the contract
 - `stripe_customer_id text nullable` (saved payment methods, one-tap rebooking)
 
 **`bookings`** — one table for all three block types
@@ -328,9 +344,11 @@ Enable extensions: `btree_gist` (needed for the no-double-booking constraint),
   to the table only works for staff. Therefore: staff screens subscribe to
   `postgres_changes` under their role, and an AFTER INSERT/UPDATE trigger **broadcasts
   a sanitized availability event** (car_id, start_at, end_at, canceled-or-not — never
-  customer data) on a public Realtime broadcast topic that customer apps and the
-  website widget subscribe to. That is what makes ranges gray out instantly for
-  everyone without leaking a single name.
+  customer data) on a Realtime broadcast topic that customer apps and the website
+  widget subscribe to. Database-originated broadcasts only deliver on **private
+  channels authorized via RLS on `realtime.messages`** — so the availability topic
+  gets an RLS policy granting `anon` and `authenticated` read access. That is what
+  makes ranges gray out instantly for everyone without leaking a single name.
 
 ### Pricing & policy tables
 
@@ -418,9 +436,12 @@ Enable extensions: `btree_gist` (needed for the no-double-booking constraint),
 **`payments`**
 - `id uuid PK`, `booking_id FK`
 - `kind text check in ('rental','deposit_hold','deposit_capture','extra_charge','refund')`
-- `stripe_payment_intent_id text unique`, `amount_cents int`, `status text`
-- The unique intent id makes webhook processing idempotent — Stripe retries
-  deliveries, and a retried event must never double-record a payment.
+- `stripe_payment_intent_id text`, `stripe_event_id text unique nullable`,
+  `amount_cents int`, `status text`
+- Uniqueness is `(stripe_payment_intent_id, kind)` — one intent legitimately appears
+  more than once in the ledger (a deposit hold and its later capture share an intent;
+  a refund references the rental's intent) but never twice for the same movement.
+  Webhook idempotency keys on the Stripe **event** id, not the intent id.
 
 **`turo_inbound_emails`** — raw ingestion log + review queue
 - `id uuid PK`, `message_id text unique`, `from_email, subject text`, `raw_body text`
@@ -428,9 +449,13 @@ Enable extensions: `btree_gist` (needed for the no-double-booking constraint),
 - `parsed jsonb`, `booking_id FK nullable`
 
 **`notifications_log`** — every push/email sent; also the idempotency guard for the
-scheduled runner (event + booking + recipient unique)
+scheduled runner
 - `id uuid PK`, `booking_id FK nullable`, `recipient text`, `channel text`,
-  `event text`, `sent_at timestamptz`
+  `event text`, `sequence int default 0`, `sent_at timestamptz`
+- Uniqueness is `(event, booking_id, recipient, sequence)` — one-shot events use
+  sequence 0, while legitimately recurring events (overdue-return escalations, each
+  deposit re-authorization on a long rental) increment the sequence. Without the
+  sequence column the guard would block every occurrence after the first.
 
 **`app_config`** — single row, fetched at app launch
 - `min_supported_build int` — builds below this show a friendly "update required"
@@ -463,7 +488,7 @@ scheduled runner (event + booking + recipient unique)
 |---|---|
 | `car-photos` | public read |
 | `condition-photos` | staff only |
-| `licenses` | staff only |
+| `licenses` | customers INSERT to their own path (the MyTrips pre-arrival upload depends on it); read is staff-only |
 | `contracts` | staff + owning customer via signed URLs |
 
 ## 8. Edge functions
@@ -486,10 +511,14 @@ lives here and nowhere else**. Secrets via `supabase secrets set`: `STRIPE_SECRE
    (never trust client totals), enforces turnaround buffer + lead/advance windows,
    re-validates availability (the DB exclusion constraint is the final guard — handle
    its error as "just taken"), freezes the quote into `bookings.quote`, creates the
-   Stripe PaymentIntent (rental amount) with the customer's `stripe_customer_id` so
-   cards save for one-tap rebooking, and returns the client secret for PaymentSheet
-   (Apple Pay enabled). Deposit is a separate manual-capture PaymentIntent created at
-   pickup.
+   Stripe PaymentIntent (rental amount) with the customer's `stripe_customer_id`
+   **and `setup_future_usage: 'off_session'`** — attaching a customer alone does NOT
+   save the card; without this flag the deposit hold, mid-rental re-auth, one-tap
+   rebooking, and off-session claim charges all silently break. Returns the client
+   secret for PaymentSheet (Apple Pay enabled) to app callers, **or a hosted Stripe
+   Checkout session URL to web callers** — PaymentSheet is an iOS SDK, so the website
+   widget pays through Checkout with the same intent semantics. Deposit is a separate
+   manual-capture PaymentIntent created at pickup.
 3. **`cancel-booking`** — applies `policies.cancellation_tiers` to compute the refund,
    issues the Stripe refund, cancels the booking (freeing the dates), notifies the
    customer with the itemized refund math, and — for direct bookings — reminds staff to
@@ -498,7 +527,12 @@ lives here and nowhere else**. Secrets via `supabase secrets set`: `STRIPE_SECRE
    booked/modified/canceled emails: extract guest name, car (match against `cars` by
    make/model/year with fuzzy fallback), dates, trip ref. Confident parse → upsert
    booking by `turo_trip_ref`. Not confident → `needs_review` row + staff push.
-   Store every raw email in `turo_inbound_emails` regardless.
+   Store every raw email in `turo_inbound_emails` regardless. **If a parsed Turo
+   trip's dates hit the `no_overlap` constraint, that is a cross-channel
+   double-booking — the most dangerous event for a fleet listed on two channels
+   (outbound Turo blocking is manual, §4, so the race window is real). Never let it
+   die as an error: write `needs_review` with an URGENT staff alert so a human
+   decides which channel wins and calls the other guest immediately.**
 5. **`generate-contract`** — booking_id → merge template fields (including the itemized
    `{{quote_table}}`) → render PDF (`pdf-lib`) → store in `contracts` bucket → return
    signed URL. Triggered automatically when a booking is confirmed, so the customer can
@@ -513,7 +547,10 @@ lives here and nowhere else**. Secrets via `supabase secrets set`: `STRIPE_SECRE
 8. **`send-push`** — APNs sender (token-based auth). Called by DB webhooks and the
    scheduled runner. Logs to `notifications_log`.
 9. **`wallet-pass`** — generates an Apple Wallet PKPass for a confirmed booking (car,
-   dates, pickup address, booking ref). Updates the pass if dates change.
+   dates, pickup address, booking ref). On a date change it **re-issues a fresh pass**
+   (emailed + available in MyTrips) — true in-place pass updates require the full
+   PassKit Web Service (registration endpoints, a registrations table, pushes to the
+   pass type), which is deliberately parked (§15).
 10. **`scheduled-runner`** — invoked by pg_cron **every 5 minutes** (cheap; each task
     gates its own cadence internally). One idempotent sweep (guarded by
     `notifications_log` uniqueness) that:
@@ -624,6 +661,11 @@ lives here and nowhere else**. Secrets via `supabase secrets set`: `STRIPE_SECRE
   numbers, two screens.
 - `TuroReviewQueueView` — `needs_review` emails: parsed guess shown, staff fixes
   car/dates, one tap creates the booking. Target: under 30 seconds per item.
+  Cross-channel double-booking conflicts surface here as URGENT, pinned to the top.
+- **`NewBookingView`** (staff) — create a paid direct booking for a walk-in at the
+  counter: pick car + dates, scan license, then collect payment via a **QR-coded
+  Stripe payment link** the customer scans with their own phone (works with any
+  wallet, no card-present hardware). Card-present Stripe Terminal is parked (§15).
 
 ### Cross-cutting implementation notes
 
@@ -689,7 +731,8 @@ function from the two condition reports + `policies`, with every line waivable b
 | **Maintenance / registration / inspection due** | — | — | ✓ |
 
 All sends logged to `notifications_log`, which doubles as the scheduled runner's
-idempotency guard — no event fires twice.
+idempotency guard — no occurrence fires twice, and recurring events (escalations,
+hold re-auths) advance a sequence number rather than being swallowed by the guard.
 
 ## 12. Owner console — god mode on Vercel
 
@@ -798,7 +841,8 @@ during the build, add it here with its designed behavior before fixing it.
 | Two people edit the same booking at once | Optimistic concurrency via `updated_at`: second writer gets "changed underneath you, reloading" — no silent clobber |
 | Back-to-back bookings leave no time to clean the car | `policies.turnaround_minutes` buffer is baked into availability and quotes — the gap is unsellable by construction |
 | Supabase/Vercel outage mid-counter | Staff app degrades gracefully: cached data stays readable, the wizard keeps capturing offline into the queue, and only the deposit-hold step hard-requires the backend |
-| Stripe webhook delivered twice | Unique `stripe_payment_intent_id` on `payments` — reprocessing is a no-op |
+| Stripe webhook delivered twice | Unique Stripe **event id** on `payments` — reprocessing is a no-op |
+| Turo trip arrives overlapping an existing booking (cross-channel double-book) | `turo-inbound` catches the constraint violation → URGENT review-queue item + staff push; a human picks which channel wins while there's still time to call the guest |
 
 ### Security, privacy & data retention
 
@@ -844,10 +888,13 @@ trigger, Realtime on `bookings`, pg_cron schedule), storage buckets + policies, 
 test suite, seed data (3 sample cars, rate rules, extras, default contract template,
 placeholder policies). **Pricing module test-first** with its full unit suite; `quote`
 function serving it.
+Pending-booking expiry ships here as a plain pg_cron SQL job (Phase 2's booking flow
+depends on it — it cannot wait for the Phase 5 runner).
 **Accept:** CI green: migrations on fresh stack, all RLS tests, all pricing tests
 (including DST and boundary cases); overlapping-booking insert rejected by the DB; a
-booking INSERT visible over Realtime; `quote` returns correct itemized math for a
-weekend + weekly-discount + extras scenario computed by hand.
+booking INSERT visible over Realtime; a stale `pending` booking expires and frees its
+dates; `quote` returns correct itemized math for a weekend + weekly-discount + extras
+scenario computed by hand.
 
 ### Phase 2 — iOS MVP (browse + book, no payments yet)
 XcodeGen project, **design system first**, passwordless auth (Apple + email OTP),
@@ -868,7 +915,9 @@ Condition-report flow with the persistent offline upload queue; license PDF417 s
 auto-fill + age/expiry checks; `generate-contract` + `finalize-contract`; in-app
 pre-signing from the trip timeline; PickupWizard and ReturnWizard end to end including
 **auto-computed, waivable return charges**; DamageCompareView; claims opened from
-return flow (charging comes in Phase 5).
+return flow. Money steps are explicitly out of scope here exactly like claim charging:
+the wizards' deposit hold/release/capture steps render as clearly-marked stubs until
+Phase 5.
 **Accept:** full counter flow in airplane-mode-then-reconnect (photos queue and drain);
 **kill the app mid-walkaround, reopen — wizard resumes at the same step with photos
 intact**; license scan fills every field with zero typing, flags expired license and
@@ -880,7 +929,9 @@ matching SHA-256; customer receives the email.
 ### Phase 4 — Turo ingestion + website
 `turo-inbound` parser (tested against the fixture corpus) + review queue UI + staff
 push on new items; Turo block checklist on direct bookings; web widget (quote +
-availability + book) embedded on Bayrentals.com; universal links live.
+availability + book, paying through hosted Stripe Checkout — without a web payment
+path every website booking would sit pending and auto-expire unpaid) embedded on
+Bayrentals.com; universal links live.
 **Accept:** forwarded real Turo emails (booked/modified/canceled) create/update/cancel
 the right blocks; malformed email lands in review queue and is resolved in-app in under
 30 seconds; a website booking shows identical pricing to the app and blocks the app
@@ -898,8 +949,8 @@ as `payments` rows and on the customer receipt; self-serve cancellation at T-48h
 refunds the right tier percentage; **a 10-day test rental gets its deposit hold
 re-authorized before the 7-day Stripe expiry (simulate with a shortened window)**;
 a replayed Stripe webhook records nothing twice; every matrix event observed firing
-exactly once (check `notifications_log`); Wallet pass installs and updates on a date
-change.
+exactly once (check `notifications_log`); Wallet pass installs, and a date change
+re-issues a fresh pass; a website Checkout booking confirms end to end.
 
 ### Phase 6 — Fleet ops, owner console & launch
 FleetView (services, registration/inspection tracking, service-blocks calendar),
@@ -926,6 +977,8 @@ one real rental day without a blocker; App Store submission passes review.
 - Loyalty / repeat-renter discounts, promo codes
 - Multi-location support, additional staff roles/permissions
 - Home-screen widget (today's pickups/returns) and Siri App Intents
+- PassKit Web Service for in-place Wallet pass updates (v1 re-issues passes)
+- Stripe Terminal for card-present counter payments (v1 uses QR payment links)
 - Android (React Native or Kotlin — revisit demand after iOS launch)
 
 ## 16. Working agreements for Claude
@@ -961,7 +1014,10 @@ one real rental day without a blocker; App Store submission passes review.
 5. **Business policy numbers** for `docs/POLICIES.md` (placeholders until then):
    minimum renter age; daily mileage caps per car (or unlimited); late fee + grace
    period; fuel charge; cancellation tiers; weekend/seasonal pricing; weekly and
-   monthly discount percentages; deposit amounts per car; tax rate + booking fee.
+   monthly discount percentages; deposit amounts per car; tax rate + booking fee;
+   turnaround minutes between rentals; minimum lead time and maximum advance-booking
+   window; whether renter's insurance is required (and what the contract says when a
+   renter declines to provide it — ask the attorney alongside item 3).
 6. Google Business review link (for the post-trip review prompt).
 7. DNS access for bayrentals.com to add Postmark's SPF/DKIM records (so contract and
    receipt emails reliably reach inboxes instead of spam) and to host
